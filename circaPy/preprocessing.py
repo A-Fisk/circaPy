@@ -169,7 +169,8 @@ def invert_light_values(func):
         The wrapped function with inverted light values in the specified column.
     """
     @wraps(func)
-    def wrapper(data, *args, light_col=-1, **kwargs):
+    def wrapper(data, *args, light_col=-1, light_min=-100, light_max=1000,
+                **kwargs):
         # Ensure light_col is a valid index
         if isinstance(light_col, int):  # If specified as column index
             light_col_name = data.columns[light_col]
@@ -182,10 +183,11 @@ def invert_light_values(func):
         # Copy the data to avoid modifying the original DataFrame
         data = data.copy()
 
-        # Invert the light values
-        max_value = data[light_col_name].max()
-        min_value = data[light_col_name].min()
-        data[light_col_name] = max_value - data[light_col_name] + min_value
+        # Invert the light values and map them to min and max values
+        light_data = data[light_col_name]
+        data[light_col_name] = np.where(light_data <= light_data.median(),
+                                        light_max,
+                                        light_min)
 
         # Call the original function with the modified data
         return func(data, *args, **kwargs)
