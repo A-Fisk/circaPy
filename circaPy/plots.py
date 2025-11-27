@@ -22,6 +22,7 @@ def plot_actogram(data,
                   start_day=0,
                   day_label_size=5,
                   linewidth=0.5,
+                  extra_day_limit="6h",
                   **kwargs):
     """
     Plot an double plotted actogram of activity data over several days
@@ -55,6 +56,9 @@ def plot_actogram(data,
         sets which day to start as day 0 in plot, defaults to 0
     day_label_size : int
         sets size of labels on bottom x axis, defaults to 5
+    extra_day_limit : str
+        sets the threshold at which an extra day of values is added to start
+        and end of the actogram. In Timedelta string values. Default is "6H"
 
     Returns
     -------
@@ -95,6 +99,14 @@ def plot_actogram(data,
     extended_start = data_plot.index.min().normalize()
     extended_end = data_plot.index.max().normalize() + pd.Timedelta(days=1) - \
                     pd.Timedelta(seconds=1)
+
+    # Check how close data is to new start, and add extra day if so
+    if abs(extended_start - data_plot.index.min()) <= \
+                                    pd.Timedelta(extra_day_limit):
+        extended_start = extended_start - pd.Timedelta(days=1)
+    if abs(extended_end - data_plot.index.max()) <= \
+                                    pd.Timedelta(extra_day_limit):
+        extended_end = extended_end + pd.Timedelta(days=1)
 
     # create new index and set data to it
     extended_index = pd.date_range(
