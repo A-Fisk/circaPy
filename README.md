@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.org/A-Fisk/actigraphy_analysis.png?branch=master)](https://travis-ci.org/A-Fisk/actigraphy_analysis)  
+[![Main build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml)
 
+[![Development build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg?branch=development)](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml)
 
 # CircaPy
 
