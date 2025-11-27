@@ -145,8 +145,8 @@ def validate_input(func):
                         input_data,
                         pd.DataFrame) and input_data.index.freq is None:
                     raise TypeError(
-                        f"Input {name}'s index does not have freq attribute.
-                        Use data.resample(frequency).mean() to fix this issue"
+                        f"Input {name}'s index does not have freq attribute." \
+                        "Use data.resample(frequency).mean() to fix this issue")
 
         # Validate positional arguments
         for i, arg in enumerate(args):
