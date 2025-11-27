@@ -92,12 +92,10 @@ def plot_actogram(data,
         freq = pd.Timedelta(f"1{freq}")
 
     # Extend the range by 1 day but make sure lines up with original index
-    # select the length of one day
-    day_length = len(data_plot.loc[str(data_plot.index[0].date())])
-    extended_start = start - (pd.Timedelta(freq) * day_length)
-    extended_end = end + (pd.Timedelta(freq) * day_length)
+    extended_start = data_plot.index.min().normalize()
+    extended_end = data_plot.index.max().normalize() + pd.Timedelta(days=1) - \
+                    pd.Timedelta(seconds=1)
 
-    breakpoint()
     # create new index and set data to it
     extended_index = pd.date_range(
         start=extended_start, end=extended_end, freq=freq)
