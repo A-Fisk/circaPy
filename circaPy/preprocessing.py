@@ -111,6 +111,7 @@ def validate_input(func):
     - Checks if any input consists only of zeros.
     - Checks if any DataFrame is empty.
     - Checks if the index of any DataFrame is a DatetimeIndex.
+    - Checks to see if index has frequency attribute
     Raises a ValueError if any condition is not met.
     """
     @wraps(func)
@@ -138,6 +139,14 @@ def validate_input(func):
                             pd.DatetimeIndex):
                     raise TypeError(
                         f"Input {name} does not have a DatetimeIndex.")
+                
+                # Check if index has frequency value
+                if isinstance(
+                        input_data,
+                        pd.DataFrame) and input_data.index.freq is None:
+                    raise TypeError(
+                        f"Input {name}'s index does not have freq attribute.
+                        Use data.resample(frequency).mean() to fix this issue"
 
         # Validate positional arguments
         for i, arg in enumerate(args):
