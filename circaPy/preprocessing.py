@@ -110,6 +110,7 @@ def validate_input(func):
     Decorator to validate DataFrames or Series passed to the function.
     - Checks if any input consists only of zeros.
     - Checks if any DataFrame is empty.
+    - Checks if any input contains NaN values.
     - Checks if the index of any DataFrame is a DatetimeIndex.
     - Checks to see if index has frequency attribute
     Raises a ValueError if any condition is not met.
@@ -130,6 +131,28 @@ def validate_input(func):
                 # Check if empty
                 if input_data.empty:
                     raise ValueError(f"Input {name} is empty.")
+
+                # Check if contains NaN values
+                if isinstance(input_data, pd.DataFrame):
+                    nan_count = input_data.isnull().sum().sum()
+                    if nan_count > 0:
+                        total_count = input_data.size
+                        nan_pct = (nan_count / total_count) * 100
+                        raise ValueError(
+                            f"Input {name} contains {nan_count} NaN values "
+                            f"({nan_pct:.2f}% of data). "
+                            f"Use data.fillna() or data.dropna() to clean data before processing."
+                        )
+                elif isinstance(input_data, pd.Series):
+                    nan_count = input_data.isnull().sum()
+                    if nan_count > 0:
+                        total_count = len(input_data)
+                        nan_pct = (nan_count / total_count) * 100
+                        raise ValueError(
+                            f"Input {name} contains {nan_count} NaN values "
+                            f"({nan_pct:.2f}% of data). "
+                            f"Use data.fillna() or data.dropna() to clean data before processing."
+                        )
 
                 # Check if index is a DatetimeIndex (only for DataFrames)
                 if isinstance(
