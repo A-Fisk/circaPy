@@ -11,7 +11,7 @@ import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 if True:  # noqa E402
     from tests.activity_tests import assign_values, generate_test_data
-    from circaPy.preprocessing import set_circadian_time
+    from circaPy.preprocessing import set_circadian_time, validate_input
 
 
 class TestSetCircadianTime(unittest.TestCase):
@@ -125,6 +125,25 @@ class TestValidateInput(unittest.TestCase):
             light_night=[0, 1],
             light_day=[500, 501],
         )
+        # generate test function
+        @validate_input
+        def add(data):
+            return data
+        self.add = add
+
+    def test_detecting_nan_values(self):
+        """Test if nan data correctly raises an error"""
+        # Add in 100 random NaN values to the test data
+        nan_values = np.random.randint(0, len(self.data), size=100)
+        data = self.data
+        data.iloc[nan_values] = np.nan
+
+        # Check decorator errors properly
+        with self.assertRaises(ValueError):
+            self.add(data)
+
+
+
 
 
 if __name__ == "__main__":
