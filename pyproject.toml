@@ -10,14 +10,27 @@ authors = [
 version = "0.1.5"
 description = "For analysing circadian activity data"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 keywords = ["circadian"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: MacOS"
     ]
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "seaborn",
+    "pingouin",
+    "astropy",
+]
 
 [project.urls]
 Homepage = "https://github.com/A-Fisk/circaPy"
 Issues = "https://github.com/A-Fisk/circaPy/issues"
+
+[dependency-groups]
+dev = [
+    "ipython>=9.9.0",
+]
