@@ -32,5 +32,6 @@ Issues = "https://github.com/A-Fisk/circaPy/issues"
 
 [dependency-groups]
 dev = [
+    "black>=25.12.0",
     "ipython>=9.9.0",
 ]
