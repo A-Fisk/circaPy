@@ -134,52 +134,78 @@ class TestCalculateIV(unittest.TestCase):
 
     def test_calculate_IV_valid_data(self):
         """Test IV calculation on valid data."""
-        iv_sensor1 = calculate_IV(self.test_data["sensor1"])
-        iv_sensor2 = calculate_IV(self.test_data["sensor2"])
+        iv_result = calculate_IV(self.test_data)
 
-        self.assertIsInstance(
-            iv_sensor1, float, "IV result for sensor1 should be a float."
+        self.assertIsInstance(iv_result, pd.Series, "IV result should be a Series.")
+        self.assertEqual(
+            len(iv_result),
+            len(self.test_data.columns),
+            "IV result should have one value per column.",
         )
-        self.assertIsInstance(
-            iv_sensor2, float, "IV result for sensor2 should be a float."
-        )
-        self.assertGreater(iv_sensor1, 0, "IV result for sensor1 should be positive.")
-        self.assertGreater(iv_sensor2, 0, "IV result for sensor2 should be positive.")
+        for col in self.test_data.columns:
+            self.assertGreater(
+                iv_result[col], 0, f"IV result for {col} should be positive."
+            )
 
     def test_empty_data(self):
         """Test IV calculation on empty data."""
+        empty_data = pd.DataFrame({"sensor1": []}, index=pd.DatetimeIndex([]))
         with self.assertRaises(ValueError):
-            calculate_IV([])
+            calculate_IV(empty_data)
 
     def test_single_data_point(self):
         """Test IV calculation with a single data point."""
+        single_point_data = pd.DataFrame(
+            {"sensor1": [10]},
+            index=pd.date_range(start="2000-01-01", periods=1, freq="10s"),
+        )
         with self.assertRaises(ValueError):
-            calculate_IV([10])
+            calculate_IV(single_point_data)
 
     def test_identical_values(self):
         """Test IV calculation with all identical values."""
-        data = [5] * 100  # All values are the same
-        result = calculate_IV(data)
-        self.assertEqual(result, 0, "IV should be 0 for identical values.")
+        identical_data = pd.DataFrame(
+            {"sensor1": [5] * 100},
+            index=pd.date_range(start="2000-01-01", periods=100, freq="10s"),
+        )
+        result = calculate_IV(identical_data)
+        self.assertEqual(result["sensor1"], 0, "IV should be 0 for identical values.")
 
     def test_linear_increasing_data(self):
         """Test IV calculation with a linearly increasing dataset."""
-        data = np.arange(100)  # Linear increase
-        result = calculate_IV(data)
-        self.assertGreater(result, 0, "IV should be positive for linear data.")
+        linear_data = pd.DataFrame(
+            {"sensor1": np.arange(100)},
+            index=pd.date_range(start="2000-01-01", periods=100, freq="10s"),
+        )
+        result = calculate_IV(linear_data)
+        self.assertGreater(
+            result["sensor1"], 0, "IV should be positive for linear data."
+        )
 
     def test_random_data(self):
         """Test IV calculation with random data."""
-        data = np.random.randint(0, 100, size=100)
-        result = calculate_IV(data)
-        self.assertGreater(result, 0, "IV should be positive for random data.")
-        self.assertIsInstance(result, float, "IV result should be a float.")
+        random_data = pd.DataFrame(
+            {"sensor1": np.random.randint(0, 100, size=100)},
+            index=pd.date_range(start="2000-01-01", periods=100, freq="10s"),
+        )
+        result = calculate_IV(random_data)
+        self.assertGreater(
+            result["sensor1"], 0, "IV should be positive for random data."
+        )
+        self.assertIsInstance(result, pd.Series, "IV result should be a Series.")
 
     def test_dataframe_input(self):
-        """Test IV calculation when passing a DataFrame column."""
-        iv_lights = calculate_IV(self.test_data["lights"])
-        self.assertIsInstance(iv_lights, float, "IV result should be a float.")
-        self.assertGreater(iv_lights, 0, "IV result for lights should be positive.")
+        """Test IV calculation when passing a full DataFrame."""
+        iv_result = calculate_IV(self.test_data)
+        self.assertIsInstance(iv_result, pd.Series, "IV result should be a Series.")
+        self.assertEqual(
+            len(iv_result),
+            len(self.test_data.columns),
+            "IV result should have one value per column.",
+        )
+        self.assertGreater(
+            iv_result["lights"], 0, "IV result for lights should be positive."
+        )
 
 
 class TestNormaliseToBaseline(unittest.TestCase):
@@ -386,15 +412,22 @@ class TestCalculateIS(unittest.TestCase):
 
     def test_calculate_is_basic(self):
         """Test calculate_IS with valid data."""
-        is_value = calculate_IS(self.data, subject_no=0)
-        self.assertIsInstance(is_value, float, "The result should be a float.")
-        self.assertGreaterEqual(is_value, 0, "IS should be >= 0.")
-        self.assertLessEqual(is_value, 1, "IS should be <= 1.")
+        is_result = calculate_IS(self.data)
+        self.assertIsInstance(is_result, pd.Series, "The result should be a Series.")
+        self.assertEqual(
+            len(is_result),
+            len(self.data.columns),
+            "IS result should have one value per column.",
+        )
+        for col in self.data.columns:
+            self.assertGreaterEqual(is_result[col], 0, f"IS for {col} should be >= 0.")
+            self.assertLessEqual(is_result[col], 1, f"IS for {col} should be <= 1.")
 
     def test_calculate_is_different_subjects(self):
         """Test calculate_IS with different subject columns."""
-        is_sensor1 = calculate_IS(self.data, subject_no=0)
-        is_sensor2 = calculate_IS(self.data, subject_no=1)
+        is_result = calculate_IS(self.data)
+        is_sensor1 = is_result["sensor1"]
+        is_sensor2 = is_result["sensor2"]
         self.assertNotEqual(
             is_sensor1,
             is_sensor2,
@@ -407,16 +440,17 @@ class TestCalculateIS(unittest.TestCase):
         with self.assertRaises(
             ValueError, msg="Function should raise ValueError for an empty DataFrame."
         ):
-            calculate_IS(empty_data, subject_no=0)
+            calculate_IS(empty_data)
 
     def test_calculate_is_single_row(self):
         """Test calculate_IS with a single row of data."""
         single_row_data = self.data.iloc[:1]
-        is_value = calculate_IS(single_row_data, subject_no=0)
-        self.assertTrue(
-            np.isnan(is_value),
-            "IS should be NaN for single-row data due to lack of variance.",
-        )
+        is_result = calculate_IS(single_row_data)
+        for col in single_row_data.columns:
+            self.assertTrue(
+                np.isnan(is_result[col]),
+                f"IS for {col} should be NaN for single-row data due to lack of variance.",
+            )
 
     def test_calculate_is_constant_data(self):
         """Test calculate_IS with constant data."""
@@ -429,19 +463,26 @@ class TestCalculateIS(unittest.TestCase):
             light_day=[1, 2],
         )
 
-        is_value = calculate_IS(constant_data, subject_no=0)
-        self.assertTrue(
-            np.isnan(is_value),
-            "IS should be NaN for constant data due to zero total variance.",
-        )
+        is_result = calculate_IS(constant_data)
+        # sensor3 is a sine wave so won't be constant - only check sensor1, sensor2, lights
+        for col in ["sensor1", "sensor2", "lights"]:
+            self.assertTrue(
+                np.isnan(is_result[col]),
+                f"IS for {col} should be NaN for constant data due to zero total variance.",
+            )
 
-    def test_calculate_is_invalid_subject(self):
-        """Test calculate_IS with an invalid subject index."""
-        with self.assertRaises(
-            IndexError,
-            msg="Function should raise IndexError for" "an invalid subject index.",
-        ):
-            calculate_IS(self.data, subject_no=10)
+    def test_calculate_is_multiple_columns(self):
+        """Test calculate_IS returns a value for each column."""
+        is_result = calculate_IS(self.data)
+        self.assertEqual(
+            len(is_result),
+            len(self.data.columns),
+            "IS result should have one value per column.",
+        )
+        self.assertIn("sensor1", is_result.index, "Result should include sensor1.")
+        self.assertIn("sensor2", is_result.index, "Result should include sensor2.")
+        self.assertIn("sensor3", is_result.index, "Result should include sensor3.")
+        self.assertIn("lights", is_result.index, "Result should include lights.")
 
 
 class TestCalculateTV(unittest.TestCase):
