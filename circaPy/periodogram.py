@@ -2,6 +2,7 @@ import re
 import pdb
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from astropy.timeseries import LombScargle
 import circaPy.activity as act
 import circaPy.preprocessing as prep
@@ -35,6 +36,9 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
                 Period corresponding to the maximum power, in hours.
             - "Power_values" : pd.Series
                 Power values for all test periods, indexed by period in hours.
+    fig, ax
+        If showfig = True:
+          plot of periodogram power will open in new window
 
     Raises
     ------
@@ -100,14 +104,26 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
 
     # Handle cases where the power calculation fails
     if pd.isnull(power[0]):
-        return {"Pmax": 0, "Period": 0, "Power_values": pd.Series(dtype=float)}
+        return {"Pmax": 0, "Period": 0, "Power_values": pd.DataFrame(dtype=float)}
 
     # Maximum power and its corresponding period in hours
     pmax = power.max()
     best_period = freq_hours[np.argmax(power)]
 
     # Create a power series for the output
-    power_values = pd.Series(
+    power_values = pd.DataFrame(
         power, index=freq_hours).sort_index()
+        #changed from pd.series to pd.df for plotting
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(power_values)
+    ax.set_xlabel("Period (hr)")
+    ax.set_ylabel("Power")
+    ax.set_title("Periodogram")
 
-    return {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+    if kwargs.get("showfig"):
+        plt.show()
+
+    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+
+    return fig, ax, dict
