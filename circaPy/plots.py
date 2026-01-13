@@ -7,7 +7,7 @@ import matplotlib.gridspec as gs
 from matplotlib.transforms import Bbox
 import circaPy.activity as act
 import circaPy.preprocessing as prep
-from pyparsing import col
+
 
 
 @prep.validate_input
