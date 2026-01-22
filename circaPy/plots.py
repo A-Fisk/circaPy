@@ -9,6 +9,7 @@ import circaPy.activity as act
 import circaPy.preprocessing as prep
 
 
+
 @prep.validate_input
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
@@ -207,7 +208,7 @@ def plot_actogram(data,
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
 def plot_activity_profile(data,
-                          col=0,
+                          col=[0],
                           light_col=-1,
                           subplot=None,
                           resample=False,
@@ -257,12 +258,8 @@ def plot_activity_profile(data,
     if resample:
         data = data.resample(resample_freq).mean()
 
-    # select just the subject
-    curr_data = data.iloc[:, col]
+    # Select LDR column and perform light calculations                        
     light_data = data.iloc[:, light_col]
-
-    # Calculate mean activity and SEM
-    mean, sem = act.calculate_mean_activity(curr_data, sem=True)
     light_mean = act.calculate_mean_activity(light_data)
 
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
@@ -270,8 +267,6 @@ def plot_activity_profile(data,
     freq = pd.infer_freq(data.index)
     datetime_index = pd.date_range(
         start=start_date, periods=len(mean), freq=freq)
-    mean.index = datetime_index
-    sem.index = datetime_index
     light_mean.index = datetime_index
 
     # Ensure freq has a numeric component
@@ -288,69 +283,84 @@ def plot_activity_profile(data,
     sem.index += offset_time
     light_mean.index += offset_time
 
-    # Create plot if no subplot is provided
-    if subplot is None:
-        fig, ax = plt.subplots(figsize=(10, 6))
-    else:
-        fig = plt.gcf()
-        ax = subplot
+    # Set up column selection and plotting
+    num_cols = len(col)
+    fig, axes = plt.subplots(nrows=num_cols, ncols=1, figsize=(10, 4 * num_cols), sharex=True)
 
-    # Plot the mean line
-    ax.plot(
-        mean.index, mean, label="Mean Activity", color="blue", linewidth=2)
+    # Plotting in case just 1 PIR col is selected
+    if num_cols == 1:
+        axes = [axes]
+      
+    # Loop to plot multiple PIRs if needed
+    for i, col_idx in enumerate(col):
+        ax = axes[i]
+        # Select the PIR Columns you want to plot as indecies (PIR1 = 0, PIR2 = 1, etc.)
+        curr_data = data.iloc[:, col_idx]
+        col_name = data.columns[col_idx]
 
-    # Add shaded SEM region
-    ax.fill_between(
+        # Calculate mean activity and SEM for PIR data
+        mean, sem = act.calculate_mean_activity(curr_data, sem=True)
+        mean.index = datetime_index
+        sem.index = datetime_index
+
+        # Offset the mean and sem data to plot in the middle of the hour
+        offset_time = 0.5 * pd.Timedelta(freq)
+        mean.index += offset_time
+        sem.index += offset_time
+        light_mean.index += offset_time
+
+        # Plot mean line
+        ax.plot(mean.index, mean, label=f"{col_name}", color="blue", linewidth=2)
+
+        # Plot SEM shading
+        ax.fill_between(
         mean.index,
         mean - sem,
         mean + sem,
         color="blue",
         alpha=0.3,
-        label="± SEM"
-    )
+        label="± SEM")
 
-    # get ylims to set at this level later
-    ylim = ax.get_ylim()
+        xlim = [mean.index[0], (mean.index[0] + pd.Timedelta("24h"))]
 
-    # Find the min and max of light_mean
-    min_light_mean = light_mean.min()
-    max_light_mean = light_mean.max()
+        # Get ylims to set at this level later
+        ylim = ax.get_ylim()
+        # Find the min and max of light_mean
+        min_light_mean = light_mean.min()
+        max_light_mean = light_mean.max()
 
-    # Define the target range
-    target_max = 1000 * ylim[1]
-    target_min = -1 * target_max
+        # Define the target range
+        target_max = 1000 * ylim[1]
+        target_min = -1 * target_max
 
-    # Scale the light_mean values to the target range
-    # The formula to scale the values is:
-    # scaled_value = (value - min_value) / (max_value - min_value)
-    # * (target_max - target_min) + target_min
-
-    scaled_light_mean = (light_mean - min_light_mean
+        # Scale the light_mean values to the target range
+        # The formula to scale the values is:
+        # scaled_value = (value - min_value) / (max_value - min_value)
+        # * (target_max - target_min) + target_min
+        scaled_light_mean = (light_mean - min_light_mean
                          ) / (max_light_mean - min_light_mean
                               ) * (target_max - target_min) + target_min
+        
+        # Add lights region
+        ax.fill_between(
+            scaled_light_mean.index,
+            scaled_light_mean,
+            color='grey',
+            alpha=0.2
+        )
 
-    # Add lights region
-    ax.fill_between(
-        scaled_light_mean.index,
-        scaled_light_mean,
-        color='grey',
-        alpha=0.2
-    )
-
-    # Add labels, legend, and title
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Activity")
-    ax.set_ylim([0, ylim[1]])
-    ax.set_title("Activity Profile with Mean and SEM")
-    ax.legend()
+        ax.set_xlabel("Time")
+        #ax.set_ylabel("Activity")
+        ax.set_title(f"Activity Profile with Mean and SEM: {col_name}")
+        ax.set_ylim([0, ylim[1]]) # Auto-scale max, but start at 0
+        ax.legend()
 
     # create defaults dict
     xlim = [mean.index[0], (mean.index[0] + pd.Timedelta("24h"))]
     params_dict = {
-        "xlabel": "Time",
+        "xlabel": "Timem(hr)",
         "ylabel": "Activity",
-        "interval": 6,
-        "title": "Mean activity profile",
+        "interval": 2,
         "timeaxis": True,
         "xlim": xlim,
     }
