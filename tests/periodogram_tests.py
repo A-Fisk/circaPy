@@ -73,7 +73,7 @@ class TestLombScarglePeriod(unittest.TestCase):
             self.data, subject_no=0, low_period=20, high_period=30
         )
         power_values = result["Power_values"]
-        self.assertIsInstance(power_values, pd.Series)
+        self.assertIsInstance(power_values, pd.DataFrame)
         self.assertGreater(len(power_values), 0)
         self.assertTrue(
             (20 <= power_values.index).all() and (power_values.index <= 30).all()
