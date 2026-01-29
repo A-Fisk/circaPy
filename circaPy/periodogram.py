@@ -121,9 +121,10 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
     ax.set_ylabel("Power")
     ax.set_title("Periodogram")
 
+    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+                          
     if kwargs.get("showfig"):
         plt.show()
-
-    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
-
-    return fig, ax, dict
+        return fig, ax, dict
+    
+    return dict
