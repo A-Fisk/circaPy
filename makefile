@@ -7,7 +7,7 @@ all: format test
 .PHONY: format
 format:
 	@echo "Formatting code"
-	autopep8 --in-place --aggressive --aggressive --recursive **/*.py
+	black **/*.py
 
 
 .PHONY: test

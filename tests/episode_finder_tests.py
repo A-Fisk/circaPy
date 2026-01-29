@@ -92,10 +92,15 @@ class TestFindEpisodes(unittest.TestCase):
         self.assertTrue(episodes.empty)
 
     def test_empty_data(self):
-        # Test with empty DataFrame
+        # Test with empty DataFrame (all NaN values)
         empty_data = pd.DataFrame(columns=["Subject 1"], index=self.index)
-        episodes = find_episodes(empty_data, subject_no=0)
-        self.assertTrue(episodes.empty)
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            find_episodes(empty_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
 
     def test_large_max_interruption(self):
         # Test with a very large max_interruption that merges all episodes

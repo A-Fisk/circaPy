@@ -113,3 +113,8 @@ venv.bak/
 
 # Mac DS 
 .DS*
+
+# AI things
+CLAUDE.md
+IMPLEMENTATION_PLAN.md
+log.md

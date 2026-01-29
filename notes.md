@@ -32,13 +32,17 @@ Tutorial
 https://www.sphinx-doc.org/en/master/tutorial/more-sphinx-customization.html 
 
 ## TODO
-- publish to pypi
+- update install instructions in readme 
 - host sphinx on read-the-docs
 - use different template for docs? 
 - add in doc urls to pyproject/metadata 
 - setup apitoken in twine?
 - auto generate wheels and upload - github actions
 - add changelog files 
+- remove sleepy from environment
+- add docstring to whole module
+- update build stickers
+- ignore notes for build?
 
 ### TODO later/maybe
 - Write documentation

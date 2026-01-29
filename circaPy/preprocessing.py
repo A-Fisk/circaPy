@@ -110,7 +110,9 @@ def validate_input(func):
     Decorator to validate DataFrames or Series passed to the function.
     - Checks if any input consists only of zeros.
     - Checks if any DataFrame is empty.
+    - Checks if any input contains NaN values.
     - Checks if the index of any DataFrame is a DatetimeIndex.
+    - Checks to see if index has frequency attribute
     Raises a ValueError if any condition is not met.
     """
     @wraps(func)
@@ -130,6 +132,28 @@ def validate_input(func):
                 if input_data.empty:
                     raise ValueError(f"Input {name} is empty.")
 
+                # Check if contains NaN values
+                if isinstance(input_data, pd.DataFrame):
+                    nan_count = input_data.isnull().sum().sum()
+                    if nan_count > 0:
+                        total_count = input_data.size
+                        nan_pct = (nan_count / total_count) * 100
+                        raise ValueError(
+                            f"Input {name} contains {nan_count} NaN values "
+                            f"({nan_pct:.2f}% of data). "
+                            f"Use data.fillna() or data.dropna() to clean data before processing."
+                        )
+                elif isinstance(input_data, pd.Series):
+                    nan_count = input_data.isnull().sum()
+                    if nan_count > 0:
+                        total_count = len(input_data)
+                        nan_pct = (nan_count / total_count) * 100
+                        raise ValueError(
+                            f"Input {name} contains {nan_count} NaN values "
+                            f"({nan_pct:.2f}% of data). "
+                            f"Use data.fillna() or data.dropna() to clean data before processing."
+                        )
+
                 # Check if index is a DatetimeIndex (only for DataFrames)
                 if isinstance(
                         input_data,
@@ -138,6 +162,14 @@ def validate_input(func):
                             pd.DatetimeIndex):
                     raise TypeError(
                         f"Input {name} does not have a DatetimeIndex.")
+                
+                # Check if index has frequency value
+                if isinstance(
+                        input_data,
+                        pd.DataFrame) and input_data.index.freq is None:
+                    raise TypeError(
+                        f"Input {name}'s index does not have freq attribute." \
+                        "Use data.resample(frequency).mean() to fix this issue")
 
         # Validate positional arguments
         for i, arg in enumerate(args):
@@ -169,7 +201,8 @@ def invert_light_values(func):
         The wrapped function with inverted light values in the specified column.
     """
     @wraps(func)
-    def wrapper(data, *args, light_col=-1, **kwargs):
+    def wrapper(data, *args, light_col=-1, light_min=-100, light_max=1000,
+                **kwargs):
         # Ensure light_col is a valid index
         if isinstance(light_col, int):  # If specified as column index
             light_col_name = data.columns[light_col]
@@ -182,10 +215,11 @@ def invert_light_values(func):
         # Copy the data to avoid modifying the original DataFrame
         data = data.copy()
 
-        # Invert the light values
-        max_value = data[light_col_name].max()
-        min_value = data[light_col_name].min()
-        data[light_col_name] = max_value - data[light_col_name] + min_value
+        # Invert the light values and map them to min and max values
+        light_data = data[light_col_name]
+        data[light_col_name] = np.where(light_data <= light_data.median(),
+                                        light_max,
+                                        light_min)
 
         # Call the original function with the modified data
         return func(data, *args, **kwargs)

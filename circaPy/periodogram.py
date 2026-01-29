@@ -2,6 +2,7 @@ import re
 import pdb
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from astropy.timeseries import LombScargle
 import circaPy.activity as act
 import circaPy.preprocessing as prep
@@ -35,6 +36,9 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
                 Period corresponding to the maximum power, in hours.
             - "Power_values" : pd.Series
                 Power values for all test periods, indexed by period in hours.
+    fig, ax
+        If showfig = True:
+          plot of periodogram power will open in new window
 
     Raises
     ------
@@ -46,8 +50,11 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
     Notes
     -----
     - The function assumes evenly spaced time-series data. If the time index is
-      irregular,
-      the results may be inaccurate.
+      irregular, the results may be inaccurate.
+    - Input data must not contain NaN values. Use fillna() or dropna() before
+      calling this function.
+    - The @validate_input decorator will raise ValueError if NaN values are
+      detected.
     - The power calculation may return NaN if the data is insufficient or
       contains only NaNs.
     """
@@ -73,11 +80,20 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
 
     # Prepare observations
     observations = data.iloc[:, subject_no].values
+    observation_times = np.arange(len(data)) * sample_freq
+
+    # Check if all NaN
     if observations.size == 0 or np.all(np.isnan(observations)):
         return {"Pmax": 0,
                 "Period": np.nan,
                 "Power_values": pd.Series(dtype=float)}
-    observation_times = np.arange(len(data)) * sample_freq
+
+    # Filter out NaN values (defensive check in case decorator didn't catch it)
+    nan_mask = np.isnan(observations)
+    if np.any(nan_mask):
+        clean_mask = ~nan_mask
+        observations = observations[clean_mask]
+        observation_times = observation_times[clean_mask]
 
     # Calculate Lomb-Scargle periodogram
     power = LombScargle(
@@ -88,14 +104,27 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
 
     # Handle cases where the power calculation fails
     if pd.isnull(power[0]):
-        return {"Pmax": 0, "Period": 0, "Power_values": pd.Series(dtype=float)}
+        return {"Pmax": 0, "Period": 0, "Power_values": pd.DataFrame(dtype=float)}
 
     # Maximum power and its corresponding period in hours
     pmax = power.max()
     best_period = freq_hours[np.argmax(power)]
 
     # Create a power series for the output
-    power_values = pd.Series(
+    power_values = pd.DataFrame(
         power, index=freq_hours).sort_index()
+        #changed from pd.series to pd.df for plotting
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(power_values)
+    ax.set_xlabel("Period (hr)")
+    ax.set_ylabel("Power")
+    ax.set_title("Periodogram")
 
-    return {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+                          
+    if kwargs.get("showfig"):
+        plt.show()
+        return fig, ax, dict
+    
+    return dict
