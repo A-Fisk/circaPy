@@ -12,7 +12,6 @@ if True:  # noqa E402
 
 
 class TestFindEpisodes(unittest.TestCase):
-
     def setUp(self):
         # Generate synthetic test data
         self.index = pd.date_range("2024-01-01", periods=50, freq="10s")

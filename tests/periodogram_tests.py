@@ -14,7 +14,6 @@ if True:  # noqa E402
 
 
 class TestLombScarglePeriod(unittest.TestCase):
-
     def setUp(self):
         """Set up test data using `generate_test_data`."""
         self.data = generate_test_data(days=10, freq="10s")

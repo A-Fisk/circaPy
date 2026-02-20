@@ -15,7 +15,6 @@ if True:  # noqa E402
 
 
 class TestSetCircadianTime(unittest.TestCase):
-
     def setUp(self):
         """Set up sample data for testing using the provided functions"""
         # Generate test data with 10 days of data at 10-second intervals
@@ -113,7 +112,6 @@ class TestSetCircadianTime(unittest.TestCase):
 
 # Test validate input decorator
 class TestValidateInput(unittest.TestCase):
-
     def setUp(self):
         """Set up sample data for testing using the provided functions"""
         # Generate test data with 10 days of data at 10-second intervals

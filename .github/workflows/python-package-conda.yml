@@ -1,4 +1,4 @@
-name: Python Package using Conda
+name: Python CI using uv 
 
 on: [pull_request]
 
@@ -7,17 +7,17 @@ jobs:
     runs-on: macos-15
     steps:
       - name: checkout code
-        uses: actions/checkout@v4
-      - name: set up miniconda 
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniconda-version: latest
-          activate-environment: circapy_env
-          environment-file: environment.yml
-          auto-update-conda: true
-          use-mamba: true  
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with: 
+          version: "0.10.4"
+     
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
       - name: Test with makefile
-        shell: bash -l {0}
+        shell: bash 
         run: |
-          conda info 
-          make all 
+          make test

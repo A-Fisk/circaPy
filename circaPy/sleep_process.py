@@ -35,11 +35,7 @@ def create_scored_df(data, **kwargs):
     return sleep_df
 
 
-def _score_active_times(data,
-                        ldr_col=-1,
-                        test_col=0,
-                        threshold=1,
-                        drop_level=True):
+def _score_active_times(data, ldr_col=-1, test_col=0, threshold=1, drop_level=True):
     """
     Scores all times between start and end of activity as sleep, sets all
     other values to 0
@@ -78,9 +74,7 @@ def _score_active_times(data,
     return scored_df
 
 
-def alter_file_name(file_name,
-                    suffix,
-                    remove_slice_after=-9):
+def alter_file_name(file_name, suffix, remove_slice_after=-9):
     """
     Function to take in the file name and remove part of the
     name, replace with "suffix" and rename the file
@@ -89,8 +83,6 @@ def alter_file_name(file_name,
     :param slice_range:
     :return:
     """
-    new_file_name = file_name.stem[:remove_slice_after] + \
-        suffix + \
-        file_name.suffix
+    new_file_name = file_name.stem[:remove_slice_after] + suffix + file_name.suffix
     new_file_path = file_name.parent / new_file_name
     os.rename(file_name, new_file_path)

@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+
 idx = pd.IndexSlice
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
@@ -20,6 +21,7 @@ def plot_kwarg_decorator(func):
     :param func: The plotting function to decorate.
     :return: A decorated function that applies plot configurations.
     """
+
     @wraps(func)
     def wrapper(data, *args, **kwargs):
         # Call the original plotting function
@@ -42,18 +44,13 @@ def plot_kwarg_decorator(func):
             xfmt = kwargs.get("xfmt", mdates.DateFormatter("%H:%M"))
             final_ax.xaxis.set_major_formatter(xfmt)
             interval = kwargs.get("interval", params_dict.get("interval", 1))
-            final_ax.xaxis.set_major_locator(
-                mdates.HourLocator(interval=interval))
+            final_ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
             fig.autofmt_xdate()
 
         # Set x-axis label
         xlabel = kwargs.get("xlabel", params_dict.get("xlabel", ""))
         if xlabel:
-            final_ax.set_xlabel(
-                xlabel,
-                labelpad=5,
-                ha='center',
-                va='center')
+            final_ax.set_xlabel(xlabel, labelpad=5, ha="center", va="center")
 
         # Set y-axis label
         ylabel = kwargs.get("ylabel", params_dict.get("ylabel", ""))
@@ -62,11 +59,8 @@ def plot_kwarg_decorator(func):
         if ylabel:
             if subplot:
                 subplot.set_ylabel(
-                    ylabel,
-                    labelpad=5,
-                    ha='center',
-                    va='center',
-                    rotation='vertical')
+                    ylabel, labelpad=5, ha="center", va="center", rotation="vertical"
+                )
             else:
                 fig.text(
                     ylabelpos[0],
@@ -74,7 +68,7 @@ def plot_kwarg_decorator(func):
                     ylabel,
                     ha="center",
                     va="center",
-                    rotation="vertical"
+                    rotation="vertical",
                 )
 
         # Set plot title
@@ -115,15 +109,14 @@ def validate_input(func):
     - Checks to see if index has frequency attribute
     Raises a ValueError if any condition is not met.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Helper function to validate a DataFrame or Series
         def _validate(input_data, name):
-            if isinstance(
-                    input_data,
-                    pd.DataFrame) or isinstance(
-                        input_data,
-                        pd.Series):
+            if isinstance(input_data, pd.DataFrame) or isinstance(
+                input_data, pd.Series
+            ):
                 # Check if consists only of zeros
                 if (input_data.values == 0).all():
                     raise ValueError(f"Input {name} consists only of zeros.")
@@ -155,21 +148,20 @@ def validate_input(func):
                         )
 
                 # Check if index is a DatetimeIndex (only for DataFrames)
-                if isinstance(
-                        input_data,
-                        pd.DataFrame) and not isinstance(
-                            input_data.index,
-                            pd.DatetimeIndex):
-                    raise TypeError(
-                        f"Input {name} does not have a DatetimeIndex.")
-                
+                if isinstance(input_data, pd.DataFrame) and not isinstance(
+                    input_data.index, pd.DatetimeIndex
+                ):
+                    raise TypeError(f"Input {name} does not have a DatetimeIndex.")
+
                 # Check if index has frequency value
-                if isinstance(
-                        input_data,
-                        pd.DataFrame) and input_data.index.freq is None:
+                if (
+                    isinstance(input_data, pd.DataFrame)
+                    and input_data.index.freq is None
+                ):
                     raise TypeError(
-                        f"Input {name}'s index does not have freq attribute." \
-                        "Use data.resample(frequency).mean() to fix this issue")
+                        f"Input {name}'s index does not have freq attribute."
+                        "Use data.resample(frequency).mean() to fix this issue"
+                    )
 
         # Validate positional arguments
         for i, arg in enumerate(args):
@@ -200,26 +192,25 @@ def invert_light_values(func):
     function
         The wrapped function with inverted light values in the specified column.
     """
+
     @wraps(func)
-    def wrapper(data, *args, light_col=-1, light_min=-100, light_max=1000,
-                **kwargs):
+    def wrapper(data, *args, light_col=-1, light_min=-100, light_max=1000, **kwargs):
         # Ensure light_col is a valid index
         if isinstance(light_col, int):  # If specified as column index
             light_col_name = data.columns[light_col]
         elif isinstance(light_col, str):  # If specified as column name
             light_col_name = light_col
         else:
-            raise ValueError(
-                "light_col must be an integer index or a column name")
+            raise ValueError("light_col must be an integer index or a column name")
 
         # Copy the data to avoid modifying the original DataFrame
         data = data.copy()
 
         # Invert the light values and map them to min and max values
         light_data = data[light_col_name]
-        data[light_col_name] = np.where(light_data <= light_data.median(),
-                                        light_max,
-                                        light_min)
+        data[light_col_name] = np.where(
+            light_data <= light_data.median(), light_max, light_min
+        )
 
         # Call the original function with the modified data
         return func(data, *args, **kwargs)
@@ -230,9 +221,7 @@ def invert_light_values(func):
 #### Functions ####
 # function to set data by circadian period
 @validate_input
-def set_circadian_time(
-        data,
-        period='24h'):
+def set_circadian_time(data, period="24h"):
     """
     Reindexes current data to 24 hours CT instead of ZT by setting
     frequency to the ratio of 24hrs/new period
@@ -267,7 +256,7 @@ def set_circadian_time(
 
     # Ensure base_freq has a numeric component
     if not any(char.isdigit() for char in base_freq):
-        base_freq = '1' + base_freq  # Prepend '1' if missing
+        base_freq = "1" + base_freq  # Prepend '1' if missing
 
     # convert to timedelta
     base_timedelta = pd.to_timedelta(base_freq)
@@ -279,17 +268,11 @@ def set_circadian_time(
     # create new index based on this
     start_time = data.index[0]
     data_length = len(data)
-    new_index = pd.date_range(
-        start=start_time,
-        periods=data_length,
-        freq=new_freq_str
-    )
+    new_index = pd.date_range(start=start_time, periods=data_length, freq=new_freq_str)
 
     # reindex the data
     reindexed_data = pd.DataFrame(
-        data=data.values,
-        index=new_index,
-        columns=data.columns
+        data=data.values, index=new_index, columns=data.columns
     )
 
     return reindexed_data
