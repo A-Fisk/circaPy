@@ -8,6 +8,9 @@ CircaPy is a python module for circadian analysis of activity data.
 It was developed using laboratory
 rodents data but is applicable across species and monitoring devices.
 
+A limited version is available as an [interactive
+website](https://circapywebsite.streamlit.app/)
+
 
 ## Getting Started
 
