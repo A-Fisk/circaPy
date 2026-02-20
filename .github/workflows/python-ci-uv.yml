@@ -1,6 +1,11 @@
 name: Python CI using uv 
 
-on: [pull_request]
+on: 
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
 
 jobs:
   test:

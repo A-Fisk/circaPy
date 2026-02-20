@@ -13,17 +13,14 @@ website](https://circapywebsite.streamlit.app/)
 
 ## Getting Started
 
-Before you continue you need an installation of Anaconda, available 
-[here](https://www.anaconda.com/download).
-
-Then in a terminal of your choice run the following 
+Install circapy from pip
 
 ```
 pip install circapy
 ```
 
 This will install circaPy in your current python environment.
-Package dependencies are listed in the environment.yml file 
+Package dependencies are listed in the pyproject.toml file
 
 
 ## Using circaPy
