@@ -18,12 +18,9 @@ import circaPy.preprocessing as prep
 
 
 @prep.validate_input
-def find_episodes(data,
-                  subject_no=0,
-                  min_length="1s",
-                  max_interruption="0s",
-                  *args,
-                  **kwargs):
+def find_episodes(
+    data, subject_no=0, min_length="1s", max_interruption="0s", *args, **kwargs
+):
     """
     Identifies episodes in a time series of activity data for a specific subject,
     optionally merging episodes if interruptions between them are below a given
@@ -74,14 +71,14 @@ def find_episodes(data,
     curr_data = data.iloc[:, subject_no]
 
     # Determine the threshold for episode identification
-    zero_data = (curr_data == 0)
+    zero_data = curr_data == 0
     episode_data = curr_data[zero_data]
 
     # Identify the time differences between consecutive points
     shifted_index = episode_data.index.to_series().shift(-1)  # Shift index forward
     episode_durations = (
-        shifted_index - episode_data.index.to_series()
-    ).dropna().dt.total_seconds()
+        (shifted_index - episode_data.index.to_series()).dropna().dt.total_seconds()
+    )
 
     # Filter out consecutive zero episodes (treat them as one episode)
     # where goes activity to 0
@@ -96,7 +93,8 @@ def find_episodes(data,
     # Create a DataFrame with episodes
     episode_df = pd.Series(
         (episode_end_times[1:] - episode_start_times[:-1]).total_seconds(),
-        index=episode_start_times[:-1])
+        index=episode_start_times[:-1],
+    )
 
     # Merge episodes based on max_interruption
     if max_interruption != "0s":
@@ -113,10 +111,8 @@ def find_episodes(data,
             else:
                 # check what the interruption length is between this and last
                 interruption = (
-                    start_time - (
-                        current_start + pd.Timedelta(
-                            seconds=current_duration)
-                    )
+                    start_time
+                    - (current_start + pd.Timedelta(seconds=current_duration))
                 ).total_seconds()
                 # if short enough
                 if interruption <= max_interruption_td.total_seconds():
@@ -133,8 +129,7 @@ def find_episodes(data,
             merged_episodes.append((current_start, current_duration))
 
         # Update the episode DataFrame
-        episode_df = pd.Series(
-            {start: duration for start, duration in merged_episodes})
+        episode_df = pd.Series({start: duration for start, duration in merged_episodes})
 
     # Finally, filter episodes by min_length
     min_length_td = pd.Timedelta(min_length)
@@ -143,11 +138,9 @@ def find_episodes(data,
     return episode_df
 
 
-def _episode_finder(data,
-                    inactive_episodes=False,
-                    allow_interruptions=False,
-                    *args,
-                    **kwargs):
+def _episode_finder(
+    data, inactive_episodes=False, allow_interruptions=False, *args, **kwargs
+):
     """
     _episode_finder
 
@@ -187,41 +180,34 @@ def _episode_finder(data,
 
     # get the timedeltas between them
     data_zeros_shift = data_zeros[1:]
-    episode_lengths = (data_zeros_shift.index -
-                       data_zeros.index[:-1]).total_seconds()
+    episode_lengths = (data_zeros_shift.index - data_zeros.index[:-1]).total_seconds()
     # create Series with the start times
     start_times = data_zeros.index[:-1]
-    episode_series = pd.Series(episode_lengths,
-                               index=start_times)
+    episode_series = pd.Series(episode_lengths, index=start_times)
     # filter out all those with no values between
     # the zeros
     # find the unit of time - assuming stationary
     basic_time_unit = data.index[1] - data.index[0]
-    extended_time_unit = ((2 * basic_time_unit) -
-                          pd.Timedelta("1s")).total_seconds()
+    extended_time_unit = ((2 * basic_time_unit) - pd.Timedelta("1s")).total_seconds()
     if "min_length" in kwargs:
         extended_time_unit = pd.Timedelta(kwargs["min_length"]).total_seconds()
-    episode_lengths_filtered = episode_series[
-        episode_series > extended_time_unit
-    ]
+    episode_lengths_filtered = episode_series[episode_series > extended_time_unit]
     # label it with the correct name
     name = data.name
     episode_lengths_filtered.name = name
 
     if allow_interruptions:
         episode_lengths_filtered = filter_episodes(
-            data, episode_lengths_filtered, **kwargs)
+            data, episode_lengths_filtered, **kwargs
+        )
 
     return episode_lengths_filtered
 
 
 def filter_episodes(
-        raw_data,
-        episode_data,
-        length_val: str = "10s",
-        intensity_val: int = 30,
-        **kwargs):
-    '''
+    raw_data, episode_data, length_val: str = "10s", intensity_val: int = 30, **kwargs
+):
+    """
     Episode filter
 
     Returns a dataframe of episodes where the duration and intensity
@@ -242,7 +228,7 @@ def filter_episodes(
     pandas DataFrame
         Index is start of episode and value is duration of episode
         in seconds
-    '''
+    """
 
     # find start of each episodes
     start_index = episode_data.index[:-1]
@@ -258,31 +244,25 @@ def filter_episodes(
     locations = duration_plus_filter > time_between_episodes
 
     # find where interruption value is below given value
-    max_values = [raw_data.loc[x:y].max()
-                  for x, y in zip(start_index, start_index_next)]
+    max_values = [
+        raw_data.loc[x:y].max() for x, y in zip(start_index, start_index_next)
+    ]
     max_mask = np.array([x > intensity_val for x in max_values])
 
     # filter for given length and intensity interruption
-    episodes_filtered = episode_data.iloc[
-        :-1][locations & max_mask]
+    episodes_filtered = episode_data.iloc[:-1][locations & max_mask]
 
     # Add the duration of skipped episode to the main episode
     start_list = episodes_filtered.index[0:-1]
     end_list = episodes_filtered.index[1:] - pd.Timedelta("1s")
-    new_durations = [episode_data.loc[x:y].sum() for
-                     x, y in zip(start_list, end_list)]
+    new_durations = [episode_data.loc[x:y].sum() for x, y in zip(start_list, end_list)]
     new_durations.append(episodes_filtered.iloc[-1])
     episodes_filtered.iloc[:] = new_durations
 
     return episodes_filtered
 
 
-def episode_find_df(data,
-                    LDR=-1,
-                    remove_lights=True,
-                    check_max=True,
-                    *args,
-                    **kwargs):
+def episode_find_df(data, LDR=-1, remove_lights=True, check_max=True, *args, **kwargs):
     """
     Episode_find_df
 
@@ -342,10 +322,7 @@ def episode_find_df(data,
     return episode_df
 
 
-def check_episode_max(data,
-                      max_time="6h",
-                      LDR=-1,
-                      **kwargs):
+def check_episode_max(data, max_time="6h", LDR=-1, **kwargs):
     """
     Simple function to raise value error if any of the
     values are over 6 hours long
@@ -359,16 +336,13 @@ def check_episode_max(data,
     if any(max_values > comparison):
         raise ValueError("Max episode longer than %s" % max_time)
 
+
 # Functions to plot histogram of data
 
 
-def _deprec_episode_histogram(data,
-                              fig=None,
-                              ax=None,
-                              LDR=-1,
-                              convert=False,
-                              log=True,
-                              **kwargs):
+def _deprec_episode_histogram(
+    data, fig=None, ax=None, LDR=-1, convert=False, log=True, **kwargs
+):
     """
     Function to take dataframe and plot each pir as a
     separate column
@@ -386,29 +360,22 @@ def _deprec_episode_histogram(data,
     # create figure if not given
     if not fig and not ax:
         no_animals = len(data.columns)
-        fig, ax = plt.subplots(nrows=1,
-                               ncols=no_animals,
-                               sharex=True,
-                               sharey=True)
+        fig, ax = plt.subplots(nrows=1, ncols=no_animals, sharex=True, sharey=True)
 
     # plot a histogram on the axis
     for axis, col in zip(ax, data.columns):
         axis.hist(data.loc[:, col])
         if log:
-            axis.set_yscale('log')
+            axis.set_yscale("log")
         axis.set_title(col)
 
     # set the defaults
-    params_dict = {
-
-    }
+    params_dict = {}
 
 
-def episode_histogram(data_list,
-                      LDR: int = -1,
-                      logx: bool = True,
-                      clip: bool = True,
-                      **kwargs):
+def episode_histogram(
+    data_list, LDR: int = -1, logx: bool = True, clip: bool = True, **kwargs
+):
     """
     Plotting function takes in df and separates into list and plots
     :param data_list:
@@ -433,10 +400,9 @@ def episode_histogram(data_list,
         logy = kwargs["logy"]
 
     # plot the data, each condition separate row, each animal on a column
-    fig, ax = plt.subplots(nrows=no_conditions,
-                           ncols=no_animals,
-                           sharex=True,
-                           sharey=True)
+    fig, ax = plt.subplots(
+        nrows=no_conditions, ncols=no_animals, sharex=True, sharey=True
+    )
     # plot each condition on a separate row
     for row, condition in enumerate(label_list):
         plotting_df = tidied_data_list[row]
@@ -448,33 +414,28 @@ def episode_histogram(data_list,
                 curr_axis = ax[row, col_plot]
             else:
                 curr_axis = ax[row]
-            curr_axis.hist(plotting_col,
-                           bins=bins,
-                           log=logy,
-                           density=True)
+            curr_axis.hist(plotting_col, bins=bins, log=logy, density=True)
             if row == 0:
                 curr_axis.set_title(col_label)
             if col_plot == 0:
                 curr_axis.set_ylabel(condition)
             if logx:
-                curr_axis.set_xscale('log')
+                curr_axis.set_xscale("log")
 
     # tidy up the subplots
-    fig.subplots_adjust(hspace=0,
-                        wspace=0)
+    fig.subplots_adjust(hspace=0, wspace=0)
 
     # set the default values
     params_dict = {
         "xlabel": "Episode Duration, seconds",
         "ylabel": "Normalised Density",
-        "title": "Episode histogram"
+        "title": "Episode histogram",
     }
 
     return fig, curr_axis, params_dict
 
 
-def convert_data_to_unit(data,
-                         unit_time="1M"):
+def convert_data_to_unit(data, unit_time="1M"):
     """
     Function to convert all the values from seconds to specified
     unit

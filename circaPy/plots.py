@@ -12,18 +12,20 @@ import circaPy.preprocessing as prep
 @prep.validate_input
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
-def plot_actogram(data,
-                  subject_no=0,
-                  light_col=-1,
-                  ylim=[0, 120],
-                  fig=False,
-                  subplot=False,
-                  ldralpha=0.5,
-                  start_day=0,
-                  day_label_size=5,
-                  linewidth=0.5,
-                  extra_day_limit="6h",
-                  **kwargs):
+def plot_actogram(
+    data,
+    subject_no=0,
+    light_col=-1,
+    ylim=[0, 120],
+    fig=False,
+    subplot=False,
+    ldralpha=0.5,
+    start_day=0,
+    day_label_size=5,
+    linewidth=0.5,
+    extra_day_limit="6h",
+    **kwargs,
+):
     """
     Plot an double plotted actogram of activity data over several days
     with background shading set by the lights
@@ -97,20 +99,20 @@ def plot_actogram(data,
 
     # Extend the range by 1 day but make sure lines up with original index
     extended_start = data_plot.index.min().normalize()
-    extended_end = data_plot.index.max().normalize() + pd.Timedelta(days=1) - \
-                    pd.Timedelta(seconds=1)
+    extended_end = (
+        data_plot.index.max().normalize()
+        + pd.Timedelta(days=1)
+        - pd.Timedelta(seconds=1)
+    )
 
     # Check how close data is to new start, and add extra day if so
-    if abs(extended_start - data_plot.index.min()) <= \
-                                    pd.Timedelta(extra_day_limit):
+    if abs(extended_start - data_plot.index.min()) <= pd.Timedelta(extra_day_limit):
         extended_start = extended_start - pd.Timedelta(days=1)
-    if abs(extended_end - data_plot.index.max()) <= \
-                                    pd.Timedelta(extra_day_limit):
+    if abs(extended_end - data_plot.index.max()) <= pd.Timedelta(extra_day_limit):
         extended_end = extended_end + pd.Timedelta(days=1)
 
     # create new index and set data to it
-    extended_index = pd.date_range(
-        start=extended_start, end=extended_end, freq=freq)
+    extended_index = pd.date_range(start=extended_start, end=extended_end, freq=freq)
     data_plot = data_plot.reindex(extended_index, fill_value=-100)
 
     # select just the days
@@ -133,11 +135,13 @@ def plot_actogram(data,
 
         # draw subplots for each day on the subplot given
         subplot_spec = subplot.get_subplotspec()
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days) - 1),
-                                                  ncols=1,
-                                                  subplot_spec=subplot_spec,
-                                                  wspace=0,
-                                                  hspace=0)
+        subplot_grid = gs.GridSpecFromSubplotSpec(
+            nrows=(len(days) - 1),
+            ncols=1,
+            subplot_spec=subplot_spec,
+            wspace=0,
+            hspace=0,
+        )
         ax = []
         for grid in subplot_grid:
             sub_ax = plt.Subplot(fig, grid)
@@ -158,20 +162,17 @@ def plot_actogram(data,
         fill_ldr = curr_data_light.where(curr_data_light > 0)
 
         # plot the data and light_col
-        axis.fill_between(fill_ldr.index,
-                          fill_ldr,
-                          alpha=ldralpha,
-                          facecolor="grey")
+        axis.fill_between(fill_ldr.index, fill_ldr, alpha=ldralpha, facecolor="grey")
         axis.plot(curr_data, linewidth=linewidth)
-        axis.fill_between(fill_data.index,
-                          fill_data)
+        axis.fill_between(fill_data.index, fill_data)
 
         # need to hide all the axis to make visible
-        axis.set(xticks=[],
-                 xlim=[curr_data.index[0],
-                       curr_data.index[-1]],
-                 yticks=[],
-                 ylim=ylim)
+        axis.set(
+            xticks=[],
+            xlim=[curr_data.index[0], curr_data.index[-1]],
+            yticks=[],
+            ylim=ylim,
+        )
         spines = ["left", "right", "top", "bottom"]
         for pos in spines:
             axis.spines[pos].set_visible(False)
@@ -180,11 +181,9 @@ def plot_actogram(data,
     day_markers = np.arange(0, len(days), 10)
     day_markers = day_markers + start_day
     for axis, day in zip(ax[::10], day_markers):
-        axis.set_ylabel(day,
-                        rotation=0,
-                        va='center',
-                        ha='right',
-                        fontsize=day_label_size)
+        axis.set_ylabel(
+            day, rotation=0, va="center", ha="right", fontsize=day_label_size
+        )
 
     # create defaults dict
     params_dict = {
@@ -193,12 +192,12 @@ def plot_actogram(data,
         "interval": 6,
         "title": "Double Plotted Actogram",
         "timeaxis": True,
-        "subplot": subplot
+        "subplot": subplot,
     }
 
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
-        params_dict['timeaxis'] = kwargs["timeaxis"]
+        params_dict["timeaxis"] = kwargs["timeaxis"]
 
     return fig, ax, params_dict
 
@@ -206,14 +205,16 @@ def plot_actogram(data,
 @prep.validate_input
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
-def plot_activity_profile(data,
-                          col=0,
-                          light_col=-1,
-                          subplot=None,
-                          resample=False,
-                          resample_freq="h",
-                          *args,
-                          **kwargs):
+def plot_activity_profile(
+    data,
+    col=0,
+    light_col=-1,
+    subplot=None,
+    resample=False,
+    resample_freq="h",
+    *args,
+    **kwargs,
+):
     """
     Plot the activity profile with mean and SEM (Standard Error of the Mean).
     Optionally resample the data before plotting.
@@ -268,18 +269,23 @@ def plot_activity_profile(data,
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
     start_date = "2001-01-01"
     freq = pd.infer_freq(data.index)
-    datetime_index = pd.date_range(
-        start=start_date, periods=len(mean), freq=freq)
+    datetime_index = pd.date_range(start=start_date, periods=len(mean), freq=freq)
     mean.index = datetime_index
     sem.index = datetime_index
     light_mean.index = datetime_index
 
     # Ensure freq has a numeric component
     if not any(char.isdigit() for char in freq):
-        freq = pd.Timedelta('1' + freq)  # Prepend '1' if missing
+        freq = pd.Timedelta("1" + freq)  # Prepend '1' if missing
     # Extend the light_mean data by one extra period and forward fill
-    light_mean = pd.concat([light_mean, pd.Series(
-        [light_mean.iloc[-1]], index=[light_mean.index[-1] + pd.Timedelta(freq)])])
+    light_mean = pd.concat(
+        [
+            light_mean,
+            pd.Series(
+                [light_mean.iloc[-1]], index=[light_mean.index[-1] + pd.Timedelta(freq)]
+            ),
+        ]
+    )
     light_mean.ffill(inplace=True)
 
     # Offset the mean and sem data to plot in the middle of the hour
@@ -296,17 +302,11 @@ def plot_activity_profile(data,
         ax = subplot
 
     # Plot the mean line
-    ax.plot(
-        mean.index, mean, label="Mean Activity", color="blue", linewidth=2)
+    ax.plot(mean.index, mean, label="Mean Activity", color="blue", linewidth=2)
 
     # Add shaded SEM region
     ax.fill_between(
-        mean.index,
-        mean - sem,
-        mean + sem,
-        color="blue",
-        alpha=0.3,
-        label="± SEM"
+        mean.index, mean - sem, mean + sem, color="blue", alpha=0.3, label="± SEM"
     )
 
     # get ylims to set at this level later
@@ -325,17 +325,12 @@ def plot_activity_profile(data,
     # scaled_value = (value - min_value) / (max_value - min_value)
     # * (target_max - target_min) + target_min
 
-    scaled_light_mean = (light_mean - min_light_mean
-                         ) / (max_light_mean - min_light_mean
-                              ) * (target_max - target_min) + target_min
+    scaled_light_mean = (light_mean - min_light_mean) / (
+        max_light_mean - min_light_mean
+    ) * (target_max - target_min) + target_min
 
     # Add lights region
-    ax.fill_between(
-        scaled_light_mean.index,
-        scaled_light_mean,
-        color='grey',
-        alpha=0.2
-    )
+    ax.fill_between(scaled_light_mean.index, scaled_light_mean, color="grey", alpha=0.2)
 
     # Add labels, legend, and title
     ax.set_xlabel("Time")
@@ -357,6 +352,6 @@ def plot_activity_profile(data,
 
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
-        params_dict['timeaxis'] = kwargs["timeaxis"]
+        params_dict["timeaxis"] = kwargs["timeaxis"]
 
     return fig, ax, params_dict
