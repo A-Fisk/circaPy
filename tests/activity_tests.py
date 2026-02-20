@@ -263,7 +263,6 @@ class TestNormaliseToBaseline(unittest.TestCase):
 
 
 class TestLightPhaseActivity(unittest.TestCase):
-
     def setUp(self):
         # Set up some common data for the tests
         self.data = pd.DataFrame(
@@ -332,7 +331,6 @@ class TestLightPhaseActivity(unittest.TestCase):
 
 
 class TestRelativeAmplitude(unittest.TestCase):
-
     def setUp(self):
         """Set up test data."""
         # Create a datetime index
@@ -402,7 +400,6 @@ class TestRelativeAmplitude(unittest.TestCase):
 
 
 class TestCalculateIS(unittest.TestCase):
-
     def setUp(self):
         # Generate test data
         self.data = generate_test_data(
@@ -486,7 +483,6 @@ class TestCalculateIS(unittest.TestCase):
 
 
 class TestCalculateTV(unittest.TestCase):
-
     def setUp(self):
         # Generate test data
         self.data = generate_test_data(

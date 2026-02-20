@@ -145,7 +145,6 @@ class TestPlotActogram(unittest.TestCase):
 
 
 class TestPlotActivityProfile(unittest.TestCase):
-
     def setUp(self):
         # Generate test data using the provided function
         self.df = generate_test_data(

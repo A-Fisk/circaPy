@@ -7,7 +7,7 @@ all: format test
 .PHONY: format
 format:
 	@echo "Formatting code"
-	black **/*.py
+	uv run ruff format **/*.py
 
 
 .PHONY: test
