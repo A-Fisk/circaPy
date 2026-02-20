@@ -1,6 +1,6 @@
-[![Main build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg?branch=main&label=main)](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml)
+[![Main build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg?branch=main)](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml)
 
-[![Development build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg?branch=development&label=development)](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml)
+[![Development build](https://github.com/A-Fisk/circaPy/actions/workflows/python-package-conda.yml/badge.svg?branch=development)](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml)
 # CircaPy
 
 CircaPy is a python module for circadian analysis of activity data.
