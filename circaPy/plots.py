@@ -369,7 +369,7 @@ def plot_activity_profile(data,
     # create defaults dict
     xlim = [mean.index[0], (mean.index[0] + pd.Timedelta("24h"))]
     params_dict = {
-        "xlabel": "Timem(hr)",
+        "xlabel": "Time(hr)",
         "ylabel": "Activity",
         "interval": 2,
         "timeaxis": True,
