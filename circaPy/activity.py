@@ -20,36 +20,45 @@ def calculate_IV(data):
 
     Parameters
     ----------
-    data : array or dataframe
-        Timeseries data to calculate.
+    data : pd.DataFrame or pd.Series
+        Timeseries data to calculate. If DataFrame, calculates IV for each
+        column.
 
     Returns
     -------
-    array or dataframe with calculated IV variables
+    pd.Series
+        A Series where each element represents the IV for each column in the
+        DataFrame.
     """
-    # Convert to numpy array for convenience
-    x = np.array(data)
-    n = len(x)
+    # Dictionary to store IV for each column
+    iv_values = {}
 
-    if n < 2:
-        raise ValueError(
-            "At least two data points are required to compute IV.")
+    for column in data.columns:
+        # Convert to numpy array for convenience
+        x = np.array(data[column])
+        n = len(x)
 
-    # Calculate mean of x
-    x_mean = np.mean(x)
+        if n < 2:
+            raise ValueError("At least two data points are required to compute IV.")
 
-    # Calculate numerator
-    numerator = n * np.sum((x[1:] - x[:-1])**2)
+        # Calculate mean of x
+        x_mean = np.mean(x)
 
-    # Calculate denominator
-    denominator = (n - 1) * np.sum((x - x_mean)**2)
+        # Calculate numerator
+        numerator = n * np.sum((x[1:] - x[:-1]) ** 2)
 
-    if numerator == 0 and denominator == 0:
-        return 0
+        # Calculate denominator
+        denominator = (n - 1) * np.sum((x - x_mean) ** 2)
 
-    # Compute IV
-    IV = numerator / denominator
-    return IV
+        if numerator == 0 and denominator == 0:
+            iv_values[column] = 0
+        else:
+            # Compute IV
+            iv_values[column] = numerator / denominator
+
+    iv_result = pd.Series(iv_values, name="Intradaily Variability")
+
+    return iv_result
 
 
 @prep.validate_input
@@ -79,13 +88,11 @@ def calculate_mean_activity(data, sem=False):
     mean_activity = data.groupby(data.index.time).mean()
 
     # Convert the time index back to datetime for clarity
-    mean_activity.index = pd.to_datetime(
-        mean_activity.index, format="%H:%M:%S").time
+    mean_activity.index = pd.to_datetime(mean_activity.index, format="%H:%M:%S").time
 
     if sem:
         sem_activity = data.groupby(data.index.time).sem()
-        sem_activity.index = pd.to_datetime(
-            sem_activity.index, format="%H:%M:%S").time
+        sem_activity.index = pd.to_datetime(sem_activity.index, format="%H:%M:%S").time
 
         return mean_activity, sem_activity
 
@@ -127,9 +134,7 @@ def normalise_to_baseline(data, baseline_data):
 
 
 @prep.validate_input
-def light_phase_activity(data,
-                         light_col=-1,
-                         light_val=150):
+def light_phase_activity(data, light_col=-1, light_val=150):
     """
     Light_phase_activity
     Calculates the percentage of activity occurring during the light phase
@@ -174,10 +179,7 @@ def light_phase_activity(data,
 
 
 @prep.validate_input
-def relative_amplitude(data,
-                       time_unit="h",
-                       active_time=1,
-                       inactive_time=1):
+def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
     """
     Relative Amplitude
 
@@ -236,14 +238,13 @@ def relative_amplitude(data,
         amplitude_sum = max_active + min_inactive
         relative_amplitudes[column] = amplitude_diff / amplitude_sum
 
-    relative_amplitude = pd.Series(
-        relative_amplitudes, name="Relative Amplitude")
+    relative_amplitude = pd.Series(relative_amplitudes, name="Relative Amplitude")
 
     return relative_amplitude
 
 
 @prep.validate_input
-def calculate_IS(data, subject_no=0):
+def calculate_IS(data):
     r"""
     Calculates the Interdaily Stability (IS) for a given time series of
     activity data.
@@ -277,14 +278,12 @@ def calculate_IS(data, subject_no=0):
     data : pd.DataFrame
         The DataFrame containing the activity data for multiple subjects, where
         each column represents a subject's data over time.
-    subject_no : int, optional
-        The column index of the subject for whom the IS is being calculated.
-        Default is 0.
 
     Returns
     -------
-    float
-        The Interdaily Stability value (IS) for the specified subject's data.
+    pd.Series
+        A Series where each element represents the IS for each column in the
+        DataFrame.
 
     Notes
     -----
@@ -292,29 +291,40 @@ def calculate_IS(data, subject_no=0):
     where each row corresponds to a time point, and each column corresponds to
     a subject's activity data.
     """
-    # select the data
-    curr_data = data.iloc[:, subject_no]
+    # Dictionary to store IS for each column
+    is_values = {}
 
-    # calculate mean
-    mean_data = calculate_mean_activity(curr_data)
+    for column in data.columns:
+        # select the data
+        curr_data = data[column]
 
-    # get squared deviation from the mean
-    mean = curr_data.mean()
-    square_deviation = (mean_data - mean) ** 2
+        try:
+            # calculate mean
+            mean_data = calculate_mean_activity(curr_data)
 
-    # divide by mean to get variance around the time points
-    time_variance = square_deviation.sum() / len(square_deviation)
+            # get squared deviation from the mean
+            mean = curr_data.mean()
+            square_deviation = (mean_data - mean) ** 2
 
-    # divide by total variance
-    total_variance = curr_data.var()
+            # divide by mean to get variance around the time points
+            time_variance = square_deviation.sum() / len(square_deviation)
 
-    # is 0s avoid divide by 0
-    if time_variance == 0 and total_variance == 0:
-        return np.nan
+            # divide by total variance
+            total_variance = curr_data.var()
 
-    interdaily_stability = time_variance / total_variance
+            # is 0s avoid divide by 0
+            if time_variance == 0 and total_variance == 0:
+                is_values[column] = np.nan
+            else:
+                interdaily_stability = time_variance / total_variance
+                is_values[column] = interdaily_stability
+        except ValueError:
+            # Handle cases where data validation fails (e.g., all zeros)
+            is_values[column] = np.nan
 
-    return interdaily_stability
+    is_result = pd.Series(is_values, name="Interdaily Stability")
+
+    return is_result
 
 
 @prep.validate_input
@@ -362,14 +372,13 @@ def calculate_TV(data, subject_no=0):
     # extend mean data so matches length of curr_data
     multiple_length = len(curr_data) / len(mean_data)
     repeated_mean_data = pd.Series(
-        np.tile(
-            mean_data.values,
-            (int(multiple_length) + 1)
-        )[:len(curr_data)], index=curr_data.index)
+        np.tile(mean_data.values, (int(multiple_length) + 1))[: len(curr_data)],
+        index=curr_data.index,
+    )
 
     # calculate differences square of each time point from that timepoint mean
     deviation = repeated_mean_data - curr_data
-    square_dev = deviation ** 2
+    square_dev = deviation**2
 
     # group them by time of day
     square_dev.index = square_dev.index.strftime("%H:%M:%S")
