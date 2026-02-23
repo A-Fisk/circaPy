@@ -151,16 +151,16 @@ class TestLombScarglePeriod(unittest.TestCase):
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
 
-    def test_clean_data_after_fillna(self):
-        """Test that clean data after fillna() succeeds."""
+    def test_clean_data_after_ffill(self):
+        """Test that clean data after ffill() succeeds."""
         # Create data with NaN values
         test_data = self.data.copy()
         nan_indices = np.random.choice(
             len(test_data), size=int(len(test_data) * 0.01), replace=False)
         test_data.iloc[nan_indices, 0] = np.nan
 
-        # Clean the data using fillna
-        clean_data = test_data.fillna(method='ffill')
+        # Clean the data using ffill
+        clean_data = test_data.ffill(method='ffill')
 
         # Should succeed without raising ValueError
         result = lomb_scargle_period(clean_data, subject_no=0)
