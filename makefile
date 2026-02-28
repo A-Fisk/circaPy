@@ -16,3 +16,9 @@ test:
 	uv run pytest
 
 
+.PHONY: docs
+docs:
+	@echo "Building documentation"
+	uv run --group docs sphinx-build docs/source docs/build/html
+
+
