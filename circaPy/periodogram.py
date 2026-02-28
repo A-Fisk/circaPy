@@ -109,16 +109,16 @@ def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30, **kwa
     power_values = pd.DataFrame(power, index=freq_hours).sort_index()
     # changed from pd.series to pd.df for plotting
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(power_values)
-    ax.set_xlabel("Period (hr)")
-    ax.set_ylabel("Power")
-    ax.set_title("Periodogram")
 
-    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+    dictionary = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
 
     if kwargs.get("showfig"):
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(power_values)
+        ax.set_xlabel("Period (hr)")
+        ax.set_ylabel("Power")
+        ax.set_title("Periodogram")
         plt.show()
-        return fig, ax, dict
+        return fig, ax, dictionary
 
-    return dict
+    return dictionary
