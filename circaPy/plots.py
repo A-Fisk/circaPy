@@ -274,7 +274,7 @@ def plot_activity_profile(
 
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
     start_date = "2001-01-01"
-    freq = data_plot.index.freq # decorator enforces present 
+    freq = pd.infer_freq(data.index) 
     datetime_index = pd.date_range(start=start_date, periods=len(mean), freq=freq)
     mean.index = datetime_index
     sem.index = datetime_index
