@@ -24,6 +24,7 @@ dependencies = [
     "seaborn",
     "pingouin",
     "astropy",
+    "pytest>=9.0.2",
 ]
 
 [project.urls]
@@ -35,3 +36,8 @@ dev = [
     "ipython>=9.9.0",
     "ruff>=0.15.2",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/"]
+addopts = "-v --tb=short"
+python_files = "*_tests.py"
