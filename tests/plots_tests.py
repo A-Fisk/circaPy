@@ -233,6 +233,13 @@ class TestPlotActivityProfile(unittest.TestCase):
         ]
         self.assertEqual(params["xlim"], expected_xlim)
 
+    def test_multiple_columns_produce_correct_number_of_subplots(self):
+        # Test that passing a list of columns produces one subplot per column
+        cols = [0, 1, 2]
+        fig, ax, params = plot_activity_profile(self.df, col=cols)
+
+        self.assertEqual(len(fig.get_axes()), len(cols))
+
 
 if __name__ == "__main__":
     unittest.main()
