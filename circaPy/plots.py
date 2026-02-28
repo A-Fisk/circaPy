@@ -9,7 +9,6 @@ import circaPy.activity as act
 import circaPy.preprocessing as prep
 
 
-
 @prep.validate_input
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
@@ -206,14 +205,16 @@ def plot_actogram(
 @prep.validate_input
 @prep.invert_light_values
 @prep.plot_kwarg_decorator
-def plot_activity_profile(data,
-                          col=[0],
-                          light_col=-1,
-                          subplot=None,
-                          resample=False,
-                          resample_freq="h",
-                          *args,
-                          **kwargs):
+def plot_activity_profile(
+    data,
+    col=0,
+    light_col=-1,
+    subplot=None,
+    resample=False,
+    resample_freq="h",
+    *args,
+    **kwargs,
+):
     """
     Plot the activity profile with mean and SEM (Standard Error of the Mean).
     Optionally resample the data before plotting.
@@ -257,26 +258,28 @@ def plot_activity_profile(data,
     if resample:
         data = data.resample(resample_freq).mean()
 
-    # Select LDR column and perform light calculations                        
+    # Makes col a list to works with looping
+    col = [col] if isinstance(col, int) else col
+
+    # Select LDR column and perform light calculations
     light_data = data.iloc[:, light_col]
     light_mean = act.calculate_mean_activity(light_data)
 
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
-    start_date = "2001-01-01"
-    freq = pd.infer_freq(data.index)
-    datetime_index = pd.date_range(
-        start=start_date, periods=len(mean), freq=freq)
+    datetime_index, freq = _create_datetime_index(data, light_mean)
     light_mean.index = datetime_index
 
     # Ensure freq has a numeric component
     if not any(char.isdigit() for char in freq):
         freq = pd.Timedelta("1" + freq)  # Prepend '1' if missing
-    # Extend the light_mean data by one extra period and forward fill
+
+    # Extend the light_mean data to fill to the end of the plot
     light_mean = pd.concat(
         [
             light_mean,
             pd.Series(
-                [light_mean.iloc[-1]], index=[light_mean.index[-1] + pd.Timedelta(freq)]
+                [light_mean.iloc[-1]],
+                index=[light_mean.index[-1] + pd.Timedelta(freq)]
             ),
         ]
     )
@@ -284,47 +287,38 @@ def plot_activity_profile(data,
 
     # Offset the mean and sem data to plot in the middle of the hour
     offset_time = 0.5 * pd.Timedelta(freq)
-    mean.index += offset_time
-    sem.index += offset_time
     light_mean.index += offset_time
 
     # Set up column selection and plotting
     num_cols = len(col)
-    fig, axes = plt.subplots(nrows=num_cols, ncols=1, figsize=(10, 4 * num_cols), sharex=True)
+    fig, axes = plt.subplots(
+        nrows=num_cols, ncols=1, figsize=(10, 4 * num_cols), sharex=True
+    )
 
     # Plotting in case just 1 PIR col is selected
     if num_cols == 1:
         axes = [axes]
-      
+
     # Loop to plot multiple PIRs if needed
-    for i, col_idx in enumerate(col):
-        ax = axes[i]
+    for ax, curr_col in zip(axes, col):
         # Select the PIR Columns you want to plot as indecies (PIR1 = 0, PIR2 = 1, etc.)
-        curr_data = data.iloc[:, col_idx]
-        col_name = data.columns[col_idx]
+        col_name = data.columns[curr_col]
+        curr_data = data.loc[:, col_name]
 
         # Calculate mean activity and SEM for PIR data
         mean, sem = act.calculate_mean_activity(curr_data, sem=True)
-        mean.index = datetime_index
+        mean.index = datetime_index 
         sem.index = datetime_index
-
-        # Offset the mean and sem data to plot in the middle of the hour
-        offset_time = 0.5 * pd.Timedelta(freq)
         mean.index += offset_time
         sem.index += offset_time
-        light_mean.index += offset_time
 
         # Plot mean line
         ax.plot(mean.index, mean, label=f"{col_name}", color="blue", linewidth=2)
 
         # Plot SEM shading
         ax.fill_between(
-        mean.index,
-        mean - sem,
-        mean + sem,
-        color="blue",
-        alpha=0.3,
-        label="± SEM")
+            mean.index, mean - sem, mean + sem, color="blue", alpha=0.3, label="± SEM"
+        )
 
         xlim = [mean.index[0], (mean.index[0] + pd.Timedelta("24h"))]
 
@@ -342,22 +336,19 @@ def plot_activity_profile(data,
         # The formula to scale the values is:
         # scaled_value = (value - min_value) / (max_value - min_value)
         # * (target_max - target_min) + target_min
-        scaled_light_mean = (light_mean - min_light_mean
-                         ) / (max_light_mean - min_light_mean
-                              ) * (target_max - target_min) + target_min
-        
+        scaled_light_mean = (light_mean - min_light_mean) / (
+            max_light_mean - min_light_mean
+        ) * (target_max - target_min) + target_min
+
         # Add lights region
         ax.fill_between(
-            scaled_light_mean.index,
-            scaled_light_mean,
-            color='grey',
-            alpha=0.2
+            scaled_light_mean.index, scaled_light_mean, color="grey", alpha=0.2
         )
 
         ax.set_xlabel("Time")
-        #ax.set_ylabel("Activity")
+        # ax.set_ylabel("Activity")
         ax.set_title(f"Activity Profile with Mean and SEM: {col_name}")
-        ax.set_ylim([0, ylim[1]]) # Auto-scale max, but start at 0
+        ax.set_ylim([0, ylim[1]])  # Auto-scale max, but start at 0
         ax.legend()
 
     # create defaults dict
@@ -375,3 +366,10 @@ def plot_activity_profile(data,
         params_dict["timeaxis"] = kwargs["timeaxis"]
 
     return fig, ax, params_dict
+
+def _create_datetime_index(data, mean, start_date="2001-01-01"):
+
+    freq = pd.infer_freq(data.index)
+    datetime_index = pd.date_range(start=start_date, periods=len(mean), freq=freq)
+
+    return datetime_index, freq
