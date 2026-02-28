@@ -13,6 +13,6 @@ format:
 .PHONY: test
 test:
 	@echo "running tests"
-	uv run pytests
+	uv run pytest
 
 
