@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = "circaPy"
 copyright = "2024, Angus Fisk and Ayobami Fawole"
 author = "Angus Fisk and Ayobami Fawole"
-release = "0.1.5"
+release = "0.1.6"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
