@@ -36,6 +36,11 @@ dev = [
     "ipython>=9.9.0",
     "ruff>=0.15.2",
 ]
+docs = [
+    "sphinx>=8.0",
+    "pydata-sphinx-theme>=0.16",
+    "sphinx-autodoc-typehints>=2.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/"]
