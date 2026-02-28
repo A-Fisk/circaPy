@@ -1,25 +1,21 @@
-.. actiPy documentation master file, created by
-   sphinx-quickstart on Thu Nov 28 17:06:06 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. circaPy documentation master file
 
 circaPy documentation
-====================
+=====================
 
+circaPy is a Python library for researchers and anyone interested in analysing
+circadian activity data. It contains a series of methods commonly used in the
+field of circadian biology, applicable across species and monitoring devices.
 
-actiPy is a Python library for researchers and anyone interested in analysing
-circadian activity data, that contains a series of methods that are commonly
-used in the field.
-
-Check out the :doc: `usage` for further information.
+Check out the :doc:`usage` section for installation and quickstart examples,
+or browse the :doc:`api/index` for full API reference.
 
 .. note::
-   This project is under active development. 
-   First build of documentation.  
+   This project is under active development.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-    
-   usage 
 
+   usage
+   api/index
