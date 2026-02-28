@@ -119,9 +119,16 @@ def plot_actogram(
     # select just the days
     days = data_plot.index.normalize().unique()
 
+    # Extract numpy values
+    data_values = data_plot.values
+    light_values = data_light.values
+
     # set all 0 values to be very low so not showing on y index starting at 0
-    for mask in data_plot, data_light:
-        mask[mask == 0] = -100
+    data_values[data_values == 0] = -100
+    light_values[light_values == 0] = -100
+
+    # Set interactive off to speed up plotting
+    plt.ioff()
 
     # Create figure and subplot for every day
     # create a new figure if not passed one when called
@@ -144,8 +151,8 @@ def plot_actogram(
         )
 
     # Fill missing/0s with nans to avoid horizontal lines
-    fill_data_full = np.where(data_plot.values > 0, data_plot.values, np.nan)
-    fill_ldr_full = np.where(data_light.values > 0, data_light.values, np.nan)
+    fill_data_full = np.where(data_values > 0, data_values, np.nan)
+    fill_ldr_full = np.where(light_values > 0, light_values, np.nan)
     index_arr = data_plot.index
 
     # Create list of starts/ends to speed up loop
@@ -159,7 +166,7 @@ def plot_actogram(
         curr_index = index_arr[start:end]
 
         # plot the data and light_col
-        axis.plot(curr_index, data_plot.values[start:end], linewidth=linewidth)
+        axis.plot(curr_index, data_values[start:end], linewidth=linewidth)
         axis.fill_between(curr_index, fill_data_full[start:end])
         axis.fill_between(curr_index, fill_ldr_full[start:end], alpha=ldralpha, facecolor="grey")
 
@@ -194,6 +201,9 @@ def plot_actogram(
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
         params_dict["timeaxis"] = kwargs["timeaxis"]
+
+    # Restore interactive
+    plt.ion()
 
     return fig, ax, params_dict
 
