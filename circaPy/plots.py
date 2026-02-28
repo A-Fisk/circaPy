@@ -87,7 +87,7 @@ def plot_actogram(
 
     # add entire day of 0s at start and end by extending index
     # grab values from current index
-    freq = pd.infer_freq(data_plot.index)
+    freq = data_plot.index.freq # Decorator enforces
     start = data_plot.index.min()
     end = data_plot.index.max()
 
@@ -114,13 +114,21 @@ def plot_actogram(
     # create new index and set data to it
     extended_index = pd.date_range(start=extended_start, end=extended_end, freq=freq)
     data_plot = data_plot.reindex(extended_index, fill_value=-100)
+    data_light = data_light.reindex(extended_index, fill_value = -100)
 
     # select just the days
     days = data_plot.index.normalize().unique()
 
+    # Extract numpy values
+    data_values = data_plot.values
+    light_values = data_light.values
+
     # set all 0 values to be very low so not showing on y index starting at 0
-    for mask in data_plot, data_light:
-        mask[mask == 0] = -100
+    data_values[data_values == 0] = -100
+    light_values[light_values == 0] = -100
+
+    # Set interactive off to speed up plotting
+    plt.ioff()
 
     # Create figure and subplot for every day
     # create a new figure if not passed one when called
@@ -135,47 +143,42 @@ def plot_actogram(
 
         # draw subplots for each day on the subplot given
         subplot_spec = subplot.get_subplotspec()
-        subplot_grid = gs.GridSpecFromSubplotSpec(
+        subfig = fig.add_subfigure(subplot_spec)
+        ax = subfig.subplots(
             nrows=(len(days) - 1),
             ncols=1,
-            subplot_spec=subplot_spec,
-            wspace=0,
-            hspace=0,
+            gridspec_kw={"wspace":0, "hspace":0}
         )
-        ax = []
-        for grid in subplot_grid:
-            sub_ax = plt.Subplot(fig, grid)
-            fig.add_subplot(sub_ax)
-            ax.append(sub_ax)
+
+    # Fill missing/0s with nans to avoid horizontal lines
+    fill_data_full = np.where(data_values > 0, data_values, np.nan)
+    fill_ldr_full = np.where(light_values > 0, light_values, np.nan)
+    index_arr = data_plot.index
+
+    # Create list of starts/ends to speed up loop
+    day_starts = index_arr.searchsorted(days)
+    day_ends = index_arr.searchsorted(days + pd.Timedelta("2d"))
 
     # select each day to then plot on separate axis
     # plot two days on each row
-    for day_label, axis in zip(days, ax):
-        # get two days of data to plot
-        curr_day = str(day_label.date())
-        next_day = str(day_label.date() + pd.Timedelta("1d"))
-        curr_data = data_plot.loc[curr_day:next_day]
-        curr_data_light = data_light.loc[curr_day:next_day]
-
-        # create masked data for fill between to avoid horizontal lines
-        fill_data = curr_data.where(curr_data > 0)
-        fill_ldr = curr_data_light.where(curr_data_light > 0)
+    for start, end, axis in zip(day_starts, day_ends, ax):
+        # Find start and end of data to plot
+        curr_index = index_arr[start:end]
 
         # plot the data and light_col
-        axis.fill_between(fill_ldr.index, fill_ldr, alpha=ldralpha, facecolor="grey")
-        axis.plot(curr_data, linewidth=linewidth)
-        axis.fill_between(fill_data.index, fill_data)
+        axis.plot(curr_index, data_values[start:end], linewidth=linewidth)
+        axis.fill_between(curr_index, fill_data_full[start:end])
+        axis.fill_between(curr_index, fill_ldr_full[start:end], alpha=ldralpha, facecolor="grey")
 
-        # need to hide all the axis to make visible
+        # need to hide all the axis to make data visible
         axis.set(
             xticks=[],
-            xlim=[curr_data.index[0], curr_data.index[-1]],
+            xlim=[curr_index[0], curr_index[-1]],
             yticks=[],
             ylim=ylim,
         )
-        spines = ["left", "right", "top", "bottom"]
-        for pos in spines:
-            axis.spines[pos].set_visible(False)
+        for spine in axis.spines.values():
+            spine.set_visible(False)
 
     # create the y labels for every 10th row
     day_markers = np.arange(0, len(days), 10)
@@ -198,6 +201,9 @@ def plot_actogram(
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
         params_dict["timeaxis"] = kwargs["timeaxis"]
+
+    # Restore interactive
+    plt.ion()
 
     return fig, ax, params_dict
 
@@ -268,7 +274,7 @@ def plot_activity_profile(
 
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
     start_date = "2001-01-01"
-    freq = pd.infer_freq(data.index)
+    freq = pd.infer_freq(data.index) 
     datetime_index = pd.date_range(start=start_date, periods=len(mean), freq=freq)
     mean.index = datetime_index
     sem.index = datetime_index
