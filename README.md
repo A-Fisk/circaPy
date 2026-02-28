@@ -72,7 +72,9 @@ cpp.plot_actogram(df, showfig=True)
 ## Authors  
 
 - Angus Fisk 
-    - [angus_fisk@hotmail.com](angus_fisk@hotmail.com)
+    - <angus_fisk@hotmail.com>
+- Ayobami Fawole 
+    - <ayobami.fawole@ndcn.ox.ac.uk>
 
 ## Licence 
 
