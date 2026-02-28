@@ -1,26 +1,26 @@
-[![Build Status](https://travis-ci.org/A-Fisk/actigraphy_analysis.png?branch=master)](https://travis-ci.org/A-Fisk/actigraphy_analysis)  
+[![Main build](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml/badge.svg?branch=main)](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml)
 
-
+[![Development build](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml/badge.svg?branch=development)](https://github.com/A-Fisk/circaPy/actions/workflows/python-ci-uv.yml)
 # CircaPy
 
 CircaPy is a python module for circadian analysis of activity data.
 It was developed using laboratory
 rodents data but is applicable across species and monitoring devices.
 
+A limited version is available as an [interactive
+website](https://circapywebsite.streamlit.app/)
+
 
 ## Getting Started
 
-Before you continue you need an installation of Anaconda, available 
-[here](https://www.anaconda.com/download).
-
-Then in a terminal of your choice run the following 
+Install circapy from pip
 
 ```
-pip install git+https://github.com/A-Fisk/circaPy.git@main
+pip install circapy
 ```
 
 This will install circaPy in your current python environment.
-Package dependencies are listed in the environment.yml file 
+Package dependencies are listed in the pyproject.toml file
 
 
 ## Using circaPy
@@ -47,39 +47,34 @@ Calculate IV
 iv = act.calculate_IV(df)
 
 # Print the result
-print(f"Interdaily Variability (IV): {iv:.4f}")
+print(f"Interdaily Variability (IV). Col 0: {iv[0]:.4f}")
 ```
 
 Plot actogram 
 ```
 # Use circaPy plot_actogram
-import circaPy.actogram_plot as actp
+import circaPy.plots as cpp
 
-actp.plot_actogram(df, showfig=True)
+cpp.plot_actogram(df, showfig=True)
 ```
-
-
 
 ## Contributing 
 
 1. Fork this repository
-2. Create branch `git checkout -b <branch-name>
-3. Create conda environment
-```
-conda env create -f environment.yml
-conda activate actipy_env
-```
-4. Make your changes and commit them `git commit -m <commit-message>
-    - ensure test suite is passing by running `make all`
-5. Push to the original branch `git push origin <project_name>/<location>`
-6. Create pull request 
-
+2. Create branch `git checkout -b <branch-name>`
+3. Create uv environment `uv sync`
+4. Use uv to run test suite with `make test`
+4. Make your changes and commit them `git commit -m <commit-message>`
+5. PR back to the `development` branch
+    - ensure tests are passing, will be required to merge into
+      development branch.
 
 ## Authors  
 
 - Angus Fisk 
-    - [angus_fisk@hotmail.com](angus_fisk@hotmail.com)
-    
+    - <angus_fisk@hotmail.com>
+- Ayobami Fawole 
+    - <ayobami.fawole@ndcn.ox.ac.uk>
 
 ## Licence 
 

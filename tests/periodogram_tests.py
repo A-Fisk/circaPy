@@ -5,8 +5,8 @@ import pdb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 if True:  # noqa E402
     from circaPy.periodogram import lomb_scargle_period
     from circaPy.preprocessing import set_circadian_time
@@ -14,7 +14,6 @@ if True:  # noqa E402
 
 
 class TestLombScarglePeriod(unittest.TestCase):
-
     def setUp(self):
         """Set up test data using `generate_test_data`."""
         self.data = generate_test_data(days=10, freq="10s")
@@ -22,10 +21,8 @@ class TestLombScarglePeriod(unittest.TestCase):
     def test_valid_input(self):
         """Test the function with valid input."""
         result = lomb_scargle_period(
-            self.data,
-            subject_no=0,
-            low_period=20,
-            high_period=30)
+            self.data, subject_no=0, low_period=20, high_period=30
+        )
         self.assertIn("Pmax", result)
         self.assertIn("Period", result)
         self.assertIn("Power_values", result)
@@ -51,43 +48,123 @@ class TestLombScarglePeriod(unittest.TestCase):
     def test_all_nan_column(self):
         """Test with a column containing all NaNs."""
         nan_data = pd.DataFrame(
-            {"sensor1": [np.nan] * len(self.data)}, index=self.data.index)
-        result = lomb_scargle_period(nan_data, subject_no=0)
-        self.assertEqual(result["Pmax"], 0)
-        self.assertTrue(pd.isna(result["Period"]))
-        self.assertTrue(result["Power_values"].empty)
+            {"sensor1": [np.nan] * len(self.data)}, index=self.data.index
+        )
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            lomb_scargle_period(nan_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
 
     def test_single_value_column(self):
         """Test with a column containing a single repeated value."""
         constant_data = pd.DataFrame(
-            {"sensor1": [1] * len(self.data)}, index=self.data.index)
+            {"sensor1": [1] * len(self.data)}, index=self.data.index
+        )
         result = lomb_scargle_period(constant_data, subject_no=0)
         self.assertTrue(result["Pmax"] < 0.1)
 
     def test_power_values_structure(self):
         """Test that Power_values is a non-empty pd.Series with the correct index."""
         result = lomb_scargle_period(
-            self.data,
-            subject_no=0,
-            low_period=20,
-            high_period=30)
+            self.data, subject_no=0, low_period=20, high_period=30
+        )
         power_values = result["Power_values"]
-        self.assertIsInstance(power_values, pd.Series)
+        self.assertIsInstance(power_values, pd.DataFrame)
         self.assertGreater(len(power_values), 0)
         self.assertTrue(
-            (20 <= power_values.index).all() and (
-                power_values.index <= 30).all())
+            (20 <= power_values.index).all() and (power_values.index <= 30).all()
+        )
 
     def test_twenty_hrs(self):
         """Test can detect a 20 hour period"""
         data = self.data
         data_circ = set_circadian_time(data, period="28h")
         result = lomb_scargle_period(
-            data_circ,
-            subject_no=0,
-            low_period=20,
-            high_period=30)
+            data_circ, subject_no=0, low_period=20, high_period=30
+        )
         self.assertTrue(result["Period"] < 21)
+
+    def test_partial_nan_values(self):
+        """Test with a column containing partial NaN values (1%)."""
+        # Create data with some NaN values
+        test_data = self.data.copy()
+        # Add NaN values at various positions (1% of data)
+        nan_indices = np.random.choice(
+            len(test_data), size=int(len(test_data) * 0.01), replace=False
+        )
+        test_data.iloc[nan_indices, 0] = np.nan
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            lomb_scargle_period(test_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
+
+    def test_sparse_nan_values(self):
+        """Test with a column containing sparse NaN values (0.1%)."""
+        # Create data with sparse NaN values
+        test_data = self.data.copy()
+        # Add NaN values at various positions (0.1% of data)
+        nan_indices = np.random.choice(
+            len(test_data), size=int(len(test_data) * 0.001), replace=False
+        )
+        test_data.iloc[nan_indices, 0] = np.nan
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            lomb_scargle_period(test_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
+
+    def test_nan_at_boundaries(self):
+        """Test with NaN values at first and last positions."""
+        # Create data with NaN at boundaries
+        test_data = self.data.copy()
+        test_data.iloc[0, 0] = np.nan
+        test_data.iloc[-1, 0] = np.nan
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            lomb_scargle_period(test_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
+
+    def test_single_nan_value(self):
+        """Test with a single NaN value."""
+        # Create data with a single NaN value
+        test_data = self.data.copy()
+        test_data.iloc[len(test_data) // 2, 0] = np.nan
+
+        # Should raise ValueError from validate_input decorator
+        with self.assertRaises(ValueError) as context:
+            lomb_scargle_period(test_data, subject_no=0)
+
+        # Check error message mentions NaN
+        self.assertIn("NaN", str(context.exception))
+
+    def test_clean_data_after_ffill(self):
+        """Test that clean data after ffill() succeeds."""
+        # Create data with NaN values
+        test_data = self.data.copy()
+        nan_indices = np.random.choice(
+            len(test_data), size=int(len(test_data) * 0.01), replace=False
+        )
+        test_data.iloc[nan_indices, 0] = np.nan
+
+        # Clean the data using ffill
+        clean_data = test_data.ffill()
+
+        # Should succeed without raising ValueError
+        result = lomb_scargle_period(clean_data, subject_no=0)
+        self.assertIn("Pmax", result)
+        self.assertIn("Period", result)
+        self.assertIn("Power_values", result)
 
 
 if __name__ == "__main__":
