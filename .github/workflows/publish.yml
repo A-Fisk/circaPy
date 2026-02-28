@@ -1,0 +1,61 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - development
+
+jobs:
+  publish-stable:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.4"
+
+      - name: Build
+        run: uv build
+
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always
+
+  publish-dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: dev-pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.4"
+
+      - name: Patch version with dev suffix
+        run: |
+          python3 -c "
+          import re, pathlib
+          p = pathlib.Path('pyproject.toml')
+          content = p.read_text()
+          content = re.sub(r'(version = \"\d+\.\d+\.\d+)\"', r'\1.dev${{ github.run_number }}\"', content)
+          p.write_text(content)
+          "
+
+      - name: Build
+        run: uv build
+
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always
