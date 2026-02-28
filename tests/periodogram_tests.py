@@ -158,7 +158,7 @@ class TestLombScarglePeriod(unittest.TestCase):
         test_data.iloc[nan_indices, 0] = np.nan
 
         # Clean the data using ffill
-        clean_data = test_data.ffill(method='ffill')
+        clean_data = test_data.ffill()
 
         # Should succeed without raising ValueError
         result = lomb_scargle_period(clean_data, subject_no=0)
