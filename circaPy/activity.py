@@ -341,21 +341,11 @@ def calculate_TV(data, col=0):
 
     .. math::
 
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P}{P} \frac{S^2_h}{S^2}
-    \end{equation*}
+        \frac{\sum_{h=1}^P}{P} \frac{S^2_h}{S^2}
 
+        =\frac{\sum_{h=1}^P \frac{\sum_{x=1}^N (x_i-x_h)^2}{N}}{P \frac{\sum_{i=1}^N (x_i - \bar x)^2}{N}}
 
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P \frac{\sum_{x=1}^N (x_i-x_h)^2}{N}}{P \frac{\sum_{i=1}^N (x_i - \bar x)^2}{N}}
-    \end{equation*}
-
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P \sum_{x=1}^N (x_i-x_h)^2}{P \sum_{i=1}^N (x_i - \bar x)^2}
-    \end{equation*}
+        =\frac{\sum_{h=1}^P \sum_{x=1}^N (x_i-x_h)^2}{P \sum_{i=1}^N (x_i - \bar x)^2}
 
     where:
         - :math:`N` is the total number of observations.
