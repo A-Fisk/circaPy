@@ -181,7 +181,7 @@ def light_phase_activity(data, light_col=-1, light_val=150):
 
 
 @prep.validate_input
-def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
+def relative_amplitude(data, time_unit="h", active_time=10, inactive_time=5):
     """
     Calculate the relative amplitude for each column in the data.
 
@@ -197,9 +197,9 @@ def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
         Resampling frequency passed to ``pd.DataFrame.resample``. Default
         is ``"h"`` (hourly).
     active_time : int, optional
-        The number of most active periods to consider. Default is 1.
+        The number of most active periods to consider. Default is 10.
     inactive_time : int, optional
-        The number of least active periods to consider. Default is 1.
+        The number of least active periods to consider. Default is 5.
 
     Returns
     -------
