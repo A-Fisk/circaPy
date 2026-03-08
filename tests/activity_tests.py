@@ -492,15 +492,15 @@ class TestCalculateTV(unittest.TestCase):
 
     def test_calculate_tv_basic(self):
         """Test calculate_TV with valid data."""
-        tv_value = calculate_TV(self.data, subject_no=0)
+        tv_value = calculate_TV(self.data, col=0)
         self.assertIsInstance(tv_value, float, "The result should be a float.")
         self.assertGreaterEqual(tv_value, 0, "TV should be >= 0.")
         self.assertLessEqual(tv_value, 1, "TV should be <= 1.")
 
     def test_calculate_tv_different_subjects(self):
         """Test calculate_TV with different subject columns."""
-        tv_sensor1 = calculate_TV(self.data, subject_no=0)
-        tv_sensor2 = calculate_TV(self.data, subject_no=1)
+        tv_sensor1 = calculate_TV(self.data, col=0)
+        tv_sensor2 = calculate_TV(self.data, col=1)
         self.assertNotEqual(
             tv_sensor1,
             tv_sensor2,
@@ -513,12 +513,12 @@ class TestCalculateTV(unittest.TestCase):
         with self.assertRaises(
             ValueError, msg="Function should raise IndexError for an empty DataFrame."
         ):
-            calculate_TV(empty_data, subject_no=0)
+            calculate_TV(empty_data, col=0)
 
     def test_calculate_tv_single_row(self):
         """Test calculate_TV with a single row of data."""
         single_row_data = self.data.iloc[:1]
-        tv_value = calculate_TV(single_row_data, subject_no=0)
+        tv_value = calculate_TV(single_row_data, col=0)
         self.assertTrue(
             np.isnan(tv_value),
             "TV should be NaN for single-row data due to lack of variance.",
@@ -535,7 +535,7 @@ class TestCalculateTV(unittest.TestCase):
             light_day=[1, 2],
         )
 
-        tv_value = calculate_TV(constant_data, subject_no=0)
+        tv_value = calculate_TV(constant_data, col=0)
         self.assertTrue(
             np.isnan(tv_value),
             "TV should be NaN for constant data due to zero total variance.",
@@ -547,7 +547,7 @@ class TestCalculateTV(unittest.TestCase):
             IndexError,
             msg="Function should raise IndexError for an invalid subject index.",
         ):
-            calculate_TV(self.data, subject_no=10)
+            calculate_TV(self.data, col=10)
 
 
 if __name__ == "__main_":
