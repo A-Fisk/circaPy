@@ -9,9 +9,9 @@ import circaPy.preprocessing as prep
 @prep.validate_input
 def calculate_IV(data):
     """
-    Intradavariability calculation.
+    Intradaily Variability calculation.
 
-    Calculates intradayvariabaility according to the equation set out in
+    Calculates intradaily variability according to the equation set out in
     van Someren et al 1996, a ratio of variance of the first derivative
     to overall variance of the data.
     IV = n * sum{i=2 -> n}(x{i} - x{i-1})**2
