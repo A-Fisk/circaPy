@@ -183,21 +183,23 @@ def light_phase_activity(data, light_col=-1, light_val=150):
 @prep.validate_input
 def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
     """
-    Relative Amplitude
+    Calculate the relative amplitude for each column in the data.
 
-    Calculates the relative amplitude for each column as the difference between
-    the maximum activity during the most active hours and the minimum activity
-    during the least active hours, after resampling the data to an hourly
-    frequency.
+    Calculates the relative amplitude as the difference between the maximum
+    activity during the most active periods and the minimum activity during
+    the least active periods, after resampling the data to the given frequency.
 
     Parameters
     ----------
     data : pd.DataFrame
         A DataFrame with a time index and activity columns.
+    time_unit : str, optional
+        Resampling frequency passed to ``pd.DataFrame.resample``. Default
+        is ``"h"`` (hourly).
     active_time : int, optional
-        The number of most active hours to consider. Default is 10.
+        The number of most active periods to consider. Default is 1.
     inactive_time : int, optional
-        The number of least active hours to consider. Default is 5.
+        The number of least active periods to consider. Default is 1.
 
     Returns
     -------
@@ -208,8 +210,8 @@ def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
     Raises
     ------
     ValueError
-        If `active_time` + `inactive_time` exceeds the length of the resampled
-        data.
+        If ``active_time`` + ``inactive_time`` exceeds the length of the
+        resampled data.
     """
     # Resample data to the given frequency
     hourly_data = data.resample(time_unit).mean()
