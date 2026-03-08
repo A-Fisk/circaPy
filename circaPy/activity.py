@@ -73,15 +73,16 @@ def calculate_mean_activity(data, sem=False):
     data : pd.DataFrame
         A DataFrame with a datetime index and activity values for each time
         point.
-    sem: Boolean
-        Whether to return standard error of the mean as well, defaults
-        to False
+    sem : bool, optional
+        Whether to return the standard error of the mean as well.
+        Default is False.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the mean activity at each time point across all
-        days.
+        days. If ``sem=True``, returns a tuple of ``(mean, sem)`` where both
+        are DataFrames with the same index.
     """
     # Group data by time of day (ignoring the date) and calculate the mean for
     # each time point
