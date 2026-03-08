@@ -9,9 +9,9 @@ import circaPy.preprocessing as prep
 @prep.validate_input
 def calculate_IV(data):
     """
-    Intradavariability calculation.
+    Intradaily Variability calculation.
 
-    Calculates intradayvariabaility according to the equation set out in
+    Calculates intradaily variability according to the equation set out in
     van Someren et al 1996, a ratio of variance of the first derivative
     to overall variance of the data.
     IV = n * sum{i=2 -> n}(x{i} - x{i-1})**2
@@ -73,15 +73,16 @@ def calculate_mean_activity(data, sem=False):
     data : pd.DataFrame
         A DataFrame with a datetime index and activity values for each time
         point.
-    sem: Boolean
-        Whether to return standard error of the mean as well, defaults
-        to False
+    sem : bool, optional
+        Whether to return the standard error of the mean as well.
+        Default is False.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the mean activity at each time point across all
-        days.
+        days. If ``sem=True``, returns a tuple of ``(mean, sem)`` where both
+        are DataFrames with the same index.
     """
     # Group data by time of day (ignoring the date) and calculate the mean for
     # each time point
@@ -102,22 +103,23 @@ def calculate_mean_activity(data, sem=False):
 @prep.validate_input
 def normalise_to_baseline(data, baseline_data):
     """
-    normalise_to_baseline
+    Normalise data to baseline.
+
     Takes two dataframes and expresses the data as a percentage of the
     baseline_data.
 
     Parameters
     ----------
     data : pd.Series
-        Timeindexed data to be normalised
+        Time-indexed data to be normalised.
     baseline_data : pd.Series
-        Timeindexed data to be normalised against
+        Time-indexed data to normalise against.
 
-    returns
+    Returns
     -------
-    dataframe
-        Timeindexed dataframe with original data as a percentage of
-        baseline_data
+    pd.Series
+        Time-indexed Series with original data expressed as a percentage of
+        the baseline mean at each timepoint.
     """
     # calculate mean activity for baseline
     baseline_mean = calculate_mean_activity(baseline_data)
@@ -179,23 +181,25 @@ def light_phase_activity(data, light_col=-1, light_val=150):
 
 
 @prep.validate_input
-def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
+def relative_amplitude(data, time_unit="h", active_time=10, inactive_time=5):
     """
-    Relative Amplitude
+    Calculate the relative amplitude for each column in the data.
 
-    Calculates the relative amplitude for each column as the difference between
-    the maximum activity during the most active hours and the minimum activity
-    during the least active hours, after resampling the data to an hourly
-    frequency.
+    Calculates the relative amplitude as the difference between the maximum
+    activity during the most active periods and the minimum activity during
+    the least active periods, after resampling the data to the given frequency.
 
     Parameters
     ----------
     data : pd.DataFrame
         A DataFrame with a time index and activity columns.
+    time_unit : str, optional
+        Resampling frequency passed to ``pd.DataFrame.resample``. Default
+        is ``"h"`` (hourly).
     active_time : int, optional
-        The number of most active hours to consider. Default is 10.
+        The number of most active periods to consider. Default is 10.
     inactive_time : int, optional
-        The number of least active hours to consider. Default is 5.
+        The number of least active periods to consider. Default is 5.
 
     Returns
     -------
@@ -206,8 +210,8 @@ def relative_amplitude(data, time_unit="h", active_time=1, inactive_time=1):
     Raises
     ------
     ValueError
-        If `active_time` + `inactive_time` exceeds the length of the resampled
-        data.
+        If ``active_time`` + ``inactive_time`` exceeds the length of the
+        resampled data.
     """
     # Resample data to the given frequency
     hourly_data = data.resample(time_unit).mean()
@@ -337,21 +341,11 @@ def calculate_TV(data, col=0):
 
     .. math::
 
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P}{P} \frac{S^2_h}{S^2}
-    \end{equation*}
+        \frac{\sum_{h=1}^P}{P} \frac{S^2_h}{S^2}
 
+        =\frac{\sum_{h=1}^P \frac{\sum_{x=1}^N (x_i-x_h)^2}{N}}{P \frac{\sum_{i=1}^N (x_i - \bar x)^2}{N}}
 
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P \frac{\sum_{x=1}^N (x_i-x_h)^2}{N}}{P \frac{\sum_{i=1}^N (x_i - \bar x)^2}{N}}
-    \end{equation*}
-
-    \begin{equation*}
-    TV=
-    \frac{\sum_{h=1}^P \sum_{x=1}^N (x_i-x_h)^2}{P \sum_{i=1}^N (x_i - \bar x)^2}
-    \end{equation*}
+        =\frac{\sum_{h=1}^P \sum_{x=1}^N (x_i-x_h)^2}{P \sum_{i=1}^N (x_i - \bar x)^2}
 
     where:
         - :math:`N` is the total number of observations.
