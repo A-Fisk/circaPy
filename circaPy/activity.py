@@ -103,22 +103,23 @@ def calculate_mean_activity(data, sem=False):
 @prep.validate_input
 def normalise_to_baseline(data, baseline_data):
     """
-    normalise_to_baseline
+    Normalise data to baseline.
+
     Takes two dataframes and expresses the data as a percentage of the
     baseline_data.
 
     Parameters
     ----------
     data : pd.Series
-        Timeindexed data to be normalised
+        Time-indexed data to be normalised.
     baseline_data : pd.Series
-        Timeindexed data to be normalised against
+        Time-indexed data to normalise against.
 
-    returns
+    Returns
     -------
-    dataframe
-        Timeindexed dataframe with original data as a percentage of
-        baseline_data
+    pd.Series
+        Time-indexed Series with original data expressed as a percentage of
+        the baseline mean at each timepoint.
     """
     # calculate mean activity for baseline
     baseline_mean = calculate_mean_activity(baseline_data)
