@@ -44,7 +44,6 @@ under a standard 12:12 LD cycle
 .. image:: images/actogramfigure1.png
    :alt: Double Plotted Actogram
 
-   Double Plotted Actogram
 
 The ``plot_actogram`` funciton can also be used to model activity under
 altered LD conditions. The following figure is an actogram representing
@@ -54,7 +53,6 @@ phase (jetlag).
 .. image:: images/actogramfigure2.png
    :alt: Double Plotted Actogram Jetlag
 
-   Double Plotted Actogram Jetlag
 
 For a full description of the function parameters, see our `circaPy
 documentation <https://circapy.readthedocs.io/en/latest/api/plots.html>`__
