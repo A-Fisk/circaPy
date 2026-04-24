@@ -42,6 +42,7 @@ under a standard 12:12 LD cycle
        plot_actogram(data, subject_no = 0 showfig = True)
 
 .. image:: images/actogramfigure1.png
+       :scale: 50%
    :alt: Double Plotted Actogram
 
 
