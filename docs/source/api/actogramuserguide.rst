@@ -41,7 +41,7 @@ under a standard 12:12 LD cycle
 
        plot_actogram(data, subject_no = 0 showfig = True)
 
-.. figure:: actogramfig1.png
+.. image:: images/actogramfigure1.png
    :alt: Double Plotted Actogram
 
    Double Plotted Actogram
@@ -51,7 +51,7 @@ altered LD conditions. The following figure is an actogram representing
 PIR activity collected from a mouse maintained under an advanced light
 phase (jetlag).
 
-.. figure:: image.png
+.. image:: images/actogramfigure2.png
    :alt: Double Plotted Actogram Jetlag
 
    Double Plotted Actogram Jetlag
