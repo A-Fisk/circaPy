@@ -45,8 +45,7 @@ of PIR activity data for one mouse.
        
        plot_activity_profile(data, col = [0], showfig = True)
 
-.. figure:: images/activityplot1.png
-   :align: center
+.. image:: images/activityplot1.png
    :alt: alt text
 
    alt text
@@ -69,8 +68,7 @@ generated to compare the activity of multiple mice.
        
        plot_activity_profile(data, col = [0, 1, 2],lights_on = 4, showfig = True)
 
-.. figure:: iamges/activityplot2.png
-   :align: center
+.. image:: images/activityplot2.png
    :alt: alt text
 
    alt text
