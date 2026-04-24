@@ -48,7 +48,6 @@ of PIR activity data for one mouse.
 .. image:: images/activityplot1.png
    :alt: alt text
 
-   alt text
 
 This figure provides a visual of activity levels against shaded regions
 representing the LD cycle.
@@ -71,7 +70,6 @@ generated to compare the activity of multiple mice.
 .. image:: images/activityplot2.png
    :alt: alt text
 
-   alt text
 
 For a full description of the function parameters, see our `circaPy
 documentation <https://circapy.readthedocs.io/en/latest/api/plots.html>`__
