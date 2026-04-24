@@ -45,7 +45,7 @@ of PIR activity data for one mouse.
        
        plot_activity_profile(data, col = [0], showfig = True)
 
-.. image:: docs/source/images/activityplot1.png
+.. image:: images/activityplot1.png
    :alt: alt text
 
 
