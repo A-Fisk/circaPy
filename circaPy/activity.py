@@ -328,7 +328,7 @@ def calculate_IS(data):
 
 
 @prep.validate_input
-def calculate_TV(data, subject_no=0):
+def calculate_TV(data, col=0):
     r"""
     Calculates Timepoint Variability
 
@@ -363,7 +363,7 @@ def calculate_TV(data, subject_no=0):
     The TV value ranges from 0 to 1, lower is more stable.
     """
     # select the data
-    curr_data = data.iloc[:, subject_no]
+    curr_data = data.iloc[:, col]
 
     # calculate mean
     mean_data = calculate_mean_activity(curr_data)

@@ -7,23 +7,22 @@ CircaPy is a python module for circadian analysis of activity data.
 It was developed using laboratory
 rodents data but is applicable across species and monitoring devices.
 
+Full documentation is available at [circapy.readthedocs.io](https://circapy.readthedocs.io)
+
 A limited version is available as an [interactive
 website](https://circapywebsite.streamlit.app/)
 
 
 ## Getting Started
 
-Before you continue you need an installation of Anaconda, available 
-[here](https://www.anaconda.com/download).
-
-Then in a terminal of your choice run the following 
+Install circapy from pip
 
 ```
 pip install circapy
 ```
 
 This will install circaPy in your current python environment.
-Package dependencies are listed in the environment.yml file 
+Package dependencies are listed in the pyproject.toml file
 
 
 ## Using circaPy
@@ -75,7 +74,9 @@ cpp.plot_actogram(df, showfig=True)
 ## Authors  
 
 - Angus Fisk 
-    - [angus_fisk@hotmail.com](angus_fisk@hotmail.com)
+    - <angus_fisk@hotmail.com>
+- Ayobami Fawole 
+    - <ayobami.fawole@ndcn.ox.ac.uk>
 
 ## Licence 
 

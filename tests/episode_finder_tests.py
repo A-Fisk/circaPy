@@ -41,7 +41,7 @@ class TestFindEpisodes(unittest.TestCase):
 
     def test_default_behavior(self):
         # Default min_length="1s" and max_interruption="0s"
-        episodes = find_episodes(self.data, subject_no=0)
+        episodes = find_episodes(self.data, col=0)
         expected_values = self.expected_values_default
         expected_index = self.expected_index_default
         pd.testing.assert_series_equal(
@@ -52,7 +52,7 @@ class TestFindEpisodes(unittest.TestCase):
 
     def test_min_length(self):
         # Test with a longer min_length
-        episodes = find_episodes(self.data, subject_no=0, min_length="20s")
+        episodes = find_episodes(self.data, col=0, min_length="20s")
         expected_index = self.expected_index_default[1::2]
         expected_values = [x for x in self.expected_values_default if x >= 20]
         pd.testing.assert_series_equal(
@@ -63,7 +63,7 @@ class TestFindEpisodes(unittest.TestCase):
 
     def test_max_interruption(self):
         # Test with a max_interruption allowing merging
-        episodes = find_episodes(self.data, subject_no=0, max_interruption="30s")
+        episodes = find_episodes(self.data, col=0, max_interruption="30s")
         expected_index = self.expected_index_default[::2]
         expected_values = [
             self.expected_values_default[i] + self.expected_values_default[i + 1] + 30
@@ -78,7 +78,7 @@ class TestFindEpisodes(unittest.TestCase):
     def test_min_length_and_max_interruption(self):
         # Test with both min_length and max_interruption
         episodes = find_episodes(
-            self.data, subject_no=1, min_length="20s", max_interruption="10s"
+            self.data, col=1, min_length="20s", max_interruption="10s"
         )
         expected_index = self.data.index[1::10]
         expected_index.freq = None
@@ -91,7 +91,7 @@ class TestFindEpisodes(unittest.TestCase):
 
     def test_no_valid_episodes(self):
         # Test with no episodes meeting min_length criteria
-        episodes = find_episodes(self.data, subject_no=1, min_length="100s")
+        episodes = find_episodes(self.data, col=1, min_length="100s")
         self.assertTrue(episodes.empty)
 
     def test_empty_data(self):
@@ -100,14 +100,14 @@ class TestFindEpisodes(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            find_episodes(empty_data, subject_no=0)
+            find_episodes(empty_data, col=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
 
     def test_large_max_interruption(self):
         # Test with a very large max_interruption that merges all episodes
-        episodes = find_episodes(self.data, subject_no=0, max_interruption="100s")
+        episodes = find_episodes(self.data, col=0, max_interruption="100s")
         expected_index = self.expected_index_default[0:1]
         expected_values = [460]
         pd.testing.assert_series_equal(

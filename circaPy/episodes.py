@@ -19,7 +19,7 @@ import circaPy.preprocessing as prep
 
 @prep.validate_input
 def find_episodes(
-    data, subject_no=0, min_length="1s", max_interruption="0s", *args, **kwargs
+    data, col=0, min_length="1s", max_interruption="0s", *args, **kwargs
 ):
     """
     Identifies episodes in a time series of activity data for a specific subject,
@@ -31,7 +31,7 @@ def find_episodes(
     data : pd.DataFrame
         The activity data for multiple subjects, where each column represents
         a subject's activity over time, and the index is a time-based index.
-    subject_no : int, optional
+    col : int, optional
         The column index of the subject to analyze. Default is 0.
     min_length : str or pandas.Timedelta, optional
         The minimum duration for an episode to be included in the results.
@@ -62,13 +62,13 @@ def find_episodes(
     ...     "Subject 1": np.random.choice([0, 1], size=100, p=[0.8, 0.2]),
     ...     "Subject 2": np.random.choice([0, 1], size=100, p=[0.7, 0.3]),
     ... }, index=index)
-    >>> find_episodes(data, subject_no=0, min_length="3s", max_interruption="2s")
+    >>> find_episodes(data, col=0, min_length="3s", max_interruption="2s")
     2024-01-01 00:00:15    7.0
     2024-01-01 00:00:45    5.0
     dtype: float64
     """
     # select single column
-    curr_data = data.iloc[:, subject_no]
+    curr_data = data.iloc[:, col]
 
     # Determine the threshold for episode identification
     zero_data = curr_data == 0

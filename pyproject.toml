@@ -7,7 +7,7 @@ name = "circaPy"
 authors = [
     {name = "Angus Fisk", email = "angus_fisk@hotmail.com"},
     ]
-version = "0.1.5"
+version = "0.1.6"
 description = "For analysing circadian activity data"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -24,6 +24,7 @@ dependencies = [
     "seaborn",
     "pingouin",
     "astropy",
+    "pytest>=9.0.2",
 ]
 
 [project.urls]
@@ -35,3 +36,13 @@ dev = [
     "ipython>=9.9.0",
     "ruff>=0.15.2",
 ]
+docs = [
+    "sphinx>=8.0",
+    "pydata-sphinx-theme>=0.16",
+    "sphinx-autodoc-typehints>=2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/"]
+addopts = "-v --tb=short"
+python_files = "*_tests.py"
