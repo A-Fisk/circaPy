@@ -21,7 +21,7 @@ class TestLombScarglePeriod(unittest.TestCase):
     def test_valid_input(self):
         """Test the function with valid input."""
         result = lomb_scargle_period(
-            self.data, col=0, low_period=20, high_period=30
+            self.data, subject_no=0, low_period=20, high_period=30
         )
         self.assertIn("Pmax", result)
         self.assertIn("Period", result)
@@ -29,10 +29,10 @@ class TestLombScarglePeriod(unittest.TestCase):
         self.assertGreater(result["Pmax"], 0)
         self.assertEqual(24, np.round(result["Period"]))
 
-    def test_invalid_col(self):
-        """Test with an invalid col."""
+    def test_invalid_subject_no(self):
+        """Test with an invalid subject_no."""
         with self.assertRaises(IndexError):
-            lomb_scargle_period(self.data, col=10)
+            lomb_scargle_period(self.data, subject_no=10)
 
     def test_low_period_greater_than_high_period(self):
         """Test with low_period >= high_period."""
@@ -53,7 +53,7 @@ class TestLombScarglePeriod(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            lomb_scargle_period(nan_data, col=0)
+            lomb_scargle_period(nan_data, subject_no=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
@@ -63,13 +63,13 @@ class TestLombScarglePeriod(unittest.TestCase):
         constant_data = pd.DataFrame(
             {"sensor1": [1] * len(self.data)}, index=self.data.index
         )
-        result = lomb_scargle_period(constant_data, col=0)
+        result = lomb_scargle_period(constant_data, subject_no=0)
         self.assertTrue(result["Pmax"] < 0.1)
 
     def test_power_values_structure(self):
         """Test that Power_values is a non-empty pd.Series with the correct index."""
         result = lomb_scargle_period(
-            self.data, col=0, low_period=20, high_period=30
+            self.data, subject_no=0, low_period=20, high_period=30
         )
         power_values = result["Power_values"]
         self.assertIsInstance(power_values, pd.DataFrame)
@@ -83,7 +83,7 @@ class TestLombScarglePeriod(unittest.TestCase):
         data = self.data
         data_circ = set_circadian_time(data, period="28h")
         result = lomb_scargle_period(
-            data_circ, col=0, low_period=20, high_period=30
+            data_circ, subject_no=0, low_period=20, high_period=30
         )
         self.assertTrue(result["Period"] < 21)
 
@@ -99,7 +99,7 @@ class TestLombScarglePeriod(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            lomb_scargle_period(test_data, col=0)
+            lomb_scargle_period(test_data, subject_no=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
@@ -116,7 +116,7 @@ class TestLombScarglePeriod(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            lomb_scargle_period(test_data, col=0)
+            lomb_scargle_period(test_data, subject_no=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
@@ -130,7 +130,7 @@ class TestLombScarglePeriod(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            lomb_scargle_period(test_data, col=0)
+            lomb_scargle_period(test_data, subject_no=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
@@ -143,7 +143,7 @@ class TestLombScarglePeriod(unittest.TestCase):
 
         # Should raise ValueError from validate_input decorator
         with self.assertRaises(ValueError) as context:
-            lomb_scargle_period(test_data, col=0)
+            lomb_scargle_period(test_data, subject_no=0)
 
         # Check error message mentions NaN
         self.assertIn("NaN", str(context.exception))
@@ -158,10 +158,10 @@ class TestLombScarglePeriod(unittest.TestCase):
         test_data.iloc[nan_indices, 0] = np.nan
 
         # Clean the data using ffill
-        clean_data = test_data.ffill()
+        clean_data = test_data.ffill(method='ffill')
 
         # Should succeed without raising ValueError
-        result = lomb_scargle_period(clean_data, col=0)
+        result = lomb_scargle_period(clean_data, subject_no=0)
         self.assertIn("Pmax", result)
         self.assertIn("Period", result)
         self.assertIn("Power_values", result)

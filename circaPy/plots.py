@@ -14,7 +14,7 @@ import circaPy.preprocessing as prep
 @prep.plot_kwarg_decorator
 def plot_actogram(
     data,
-    col=0,
+    subject_no=0,
     light_col=-1,
     ylim=[0, 120],
     fig=False,
@@ -37,7 +37,7 @@ def plot_actogram(
         columns for each subject and one column for the light levels.
         WRONG - currently expecting list of dataframes, one for each animal
         and single column for each day
-    col : int
+    subject_no : int
         which column number to plot, defaults to 0
     light_col : int
         which columns contains light information, defaults to -1
@@ -80,7 +80,7 @@ def plot_actogram(
         raise ValueError("Input Dataframe is empty. Cannot plot actogram")
 
     # select the correct data to plot for activity and light
-    col_data = data.columns[col]
+    col_data = data.columns[subject_no]
     ldr_col = data.columns[light_col]
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()

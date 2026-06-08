@@ -9,7 +9,7 @@ import circaPy.preprocessing as prep
 
 
 @prep.validate_input
-def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
+def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30, **kwargs):
     """
     Calculates the Lomb-Scargle periodogram for a single column in a DataFrame.
 
@@ -18,7 +18,7 @@ def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
     data : pd.DataFrame
         Input DataFrame with time-series data. The index represents time, and
         the columns contain observations.
-    col : int, optional
+    subject_no : int, optional
         The positional index of the column to analyze. Default is 0.
     low_period : float, optional
         The shortest period to search for, in hours. Default is 20.
@@ -42,7 +42,7 @@ def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
     Raises
     ------
     IndexError
-        If `col` is out of the valid range for the DataFrame columns.
+        If `subject_no` is out of the valid range for the DataFrame columns.
     ValueError
         If `low_period` is greater than or equal to `high_period`.
 
@@ -58,9 +58,9 @@ def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
       contains only NaNs.
     """
     # Ensure the positional index is valid
-    if col < 0 or col >= len(data.columns):
+    if subject_no < 0 or subject_no >= len(data.columns):
         raise IndexError(
-            f"Invalid col {col}. Must be between 0 and"
+            f"Invalid subject_no {subject_no}. Must be between 0 and"
             f"{len(data.columns) - 1}."
         )
 
@@ -80,7 +80,7 @@ def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
     freq_hours = 1 / (freq * 3600)
 
     # Prepare observations
-    observations = data.iloc[:, col].values
+    observations = data.iloc[:, subject_no].values
     observation_times = np.arange(len(data)) * sample_freq
 
     # Check if all NaN
@@ -106,19 +106,20 @@ def lomb_scargle_period(data, col=0, low_period=20, high_period=30, **kwargs):
     best_period = freq_hours[np.argmax(power)]
 
     # Create a power series for the output
-    power_values = pd.DataFrame(power, index=freq_hours).sort_index()
-    # changed from pd.series to pd.df for plotting
+    power_values = pd.DataFrame(
+        power, index=freq_hours).sort_index()
+        #changed from pd.series to pd.df for plotting
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(power_values)
+    ax.set_xlabel("Period (hr)")
+    ax.set_ylabel("Power")
+    ax.set_title("Periodogram")
 
-
-    dictionary = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
-
+    dict = {"Pmax": pmax, "Period": best_period, "Power_values": power_values}
+                          
     if kwargs.get("showfig"):
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(power_values)
-        ax.set_xlabel("Period (hr)")
-        ax.set_ylabel("Power")
-        ax.set_title("Periodogram")
         plt.show()
-        return fig, ax, dictionary
-
-    return dictionary
+        return fig, ax, dict
+    
+    return dict
